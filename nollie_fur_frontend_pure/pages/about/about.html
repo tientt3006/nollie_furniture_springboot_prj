@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <link rel="stylesheet" href="./about.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+
+<body>
+    <div id="sidebar" class="sidebar">
+        <button class="close-btn" onclick="allSidebarOff()">&larr;</button>
+        <ul>
+            <li><a href="#" class="fur-menu">Furniture ></a></li>
+            <li><a href="#" class="collecion-menu">Collection ></a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Location</a></li>
+            <li><a href="#" class="care-menu">Customer Service ></a></li>
+            <li><a href="#">Interior Design Service</a></li>
+        </ul>
+    </div>
+    <div id="menu-overlay" class="menu-overlay" onclick="allSidebarOff()"></div>
+    <div id="sidebar-fur" class="sidebar-fur">
+        <p>Furnitures</p>
+        <ul>
+            <li><a href="../all_product/products.html">Sofas</a></li>
+            <li><a href="../all_product/products.html">Chairs</a></li>
+            <li><a href="../all_product/products.html#">Table</a></li>
+            <li><a href="../all_product/products.html#">Storages</a></li>
+            <li><a href="../all_product/products.html#">Lamp</a></li>
+            <li><a href="../all_product/products.html#">Rugs</a></li>
+            <li><a href="../all_product/products.html#">Beds</a></li>
+        </ul>
+    </div>
+    <div id="sidebar-collection" class="sidebar-collection">
+        <p>Collections</p>
+        <ul>
+            <li><a href="../collection/collections.html">Living Room</a></li>
+            <li><a href="../collection/collections.html#">Bedroom</a></li>
+            <li><a href="../collection/collections.html#">Kitchen</a></li>
+            <li><a href="../collection/collections.html#">OutDoor</a></li>
+            <li><a href="../collection/collections.html#">Dining Room</a></li>
+            <li><a href="../collection/collections.html#">Lounge</a></li>
+            <li><a href="../collection/collections.html#">-</a></li>
+        </ul>
+    </div>
+    <div id="sidebar-care" class="sidebar-care">
+        <p>Customer Care</p>
+        <ul>
+            <li><a href="#">Delivery</a></li>
+            <li><a href="#">Product Care</a></li>
+            <li><a href="#">Assambly Instruction</a></li>
+            <li><a href="#">Warranty</a></li>
+            <li><a href="#">Legal</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">-</a></li>
+        </ul>
+    </div>
+
+    <div id="search-popup" class="search-popup">
+        <button class="close-search-btn" onclick="CloseSearchPopup()">X</button>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search for products..." />
+            <button id="search-btn" onclick="performSearch()">Search</button>
+        </div>
+        <div class="search-results">
+            <ul id="search-results-list">
+                <!-- Search results will be dynamically inserted here -->
+            </ul>
+            <button id="show-all-results-btn" onclick="showAllResults()">Show all results</button>
+        </div>
+    </div>
+
+
+    <div class="wrapper">
+        <header class="header">
+            <div class="nav-left">
+                <img src="../../images/menu.png" alt="Menu" class="menu-icon">
+                <nav class="nav-links">
+                    <a href="../all_product/products.html">Furniture</a>
+                    <a href="../collection/collections.html">Collection</a>
+                </nav>
+            </div>
+            <div class="logo">
+                <a href="../home/home.html" class="logo-link" style="display: flex; text-decoration: none;">
+                <img src="../../images/logoonly.png" alt="Logo">
+                <p class="logo-name">NollieConcept</p>
+                </a>
+            </div>
+            <div class="nav-right nav-icons">
+                <img src="../../images/search.png" alt="Search" class="icon">
+                <a href="../cart/cart.html" class="icon">
+                <img src="../../images/shopping-cart.png" alt="Cart" class="icon">
+                </a>
+                <div class="user-dropdown">
+                    <img src="../../images/user.png" alt="User" class="icon user-icon">
+                    <div class="dropdown-menu">
+                        <!-- Default options for logged-out users -->
+                        <a href="../io/signin.html" class="dropdown-item" id="signin">Sign In</a>
+                        <a href="../io/signup.html" class="dropdown-item" id="signup">Sign Up</a>
+                        <!-- Options for logged-in users (hidden by default) -->
+                        <a href="../io/userinfo.html" class="dropdown-item" id="info" style="display: none;">Info</a>
+                        <a href="../home/home.html" class="dropdown-item" id="logout" style="display: none;">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <div class="banner">
+                <img src="../../images/backgound.png" alt="About Banner" style="width: 100%; height: 100vh; object-fit: cover;">
+                <div class="overlay"></div>
+                <div class="content">
+                    <h1>About Nollie Furniture</h1>
+                    <p>Discover the story behind our passion for creating timeless furniture pieces.</p>
+                </div>
+            </div>
+
+            <section class="about-section">
+                <div class="container">
+                    <h2>Our Story</h2>
+                    <p>At Nollie Furniture, we believe in the art of living beautifully. Our designs are inspired by Danish minimalism, blending functionality with elegance to create furniture that transforms your space.</p>
+                </div>
+            </section>
+
+            <section class="locations-section">
+                <div class="container">
+                    <h2>Our Locations</h2>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <ul class="location-list">
+                                <li><button class="location-btn active" onclick="showMap('hanoi', this)">Ha Noi</button></li>
+                                <li><button class="location-btn" onclick="showMap('hcm', this)">Ho Chi Minh City</button></li>
+                                <li><button class="location-btn" onclick="showMap('danang', this)">Da Nang</button></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-8">
+                            <div id="map-container" style="width: 100%; height: 400px; border: 1px solid #ddd;">
+                                <iframe id="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.856178740812!2d105.7984443154026!3d21.0031179939634!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab8d1f1f1f1f%3A0x0!2zSGFOb2kgQWRkcmVzcw!5e0!3m2!1sen!2s!4v1234567890" style="width: 100%; height: 100%; border: none;"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="contact-section">
+                <div class="container">
+                    <h2>Contact Us</h2>
+                    <p>Have questions? Reach out to us at:</p>
+                    <ul>
+                        <li>Email: info@nolliefurniture.com</li>
+                        <li>Phone: 0123.456.789</li>
+                        <li>Address: Ha Noi, HN 10000, VI</li>
+                    </ul>
+                </div>
+            </section>
+
+            
+        </div>
+
+         <!-- Footer -->
+    <footer class="text-center text-lg-start text-black" style="background-color: #ffffff; border-top: 1px solid #262626;">
+        <hr style="border: 1px solid #262626; margin: 0;">
+        <br />
+        <!-- Section: Links  -->
+        <section class="">
+            <div class="container text-center text-md-start mt-5">
+                <!-- Grid row -->
+                <div class="row mt-3">
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
+                        <!-- Content -->
+                        
+                        <h6 class="text-uppercase fw-bold" style="display: flex; align-items: center; gap: 10px; font-size: 24px;">
+                            <img src="../../images/logo2.png" alt="Logo" style="width: 50px; height: auto;"> 
+                            <span style="font-size: 24px;">Nollie</span>
+                        </h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: calc( 24px * 5); background-color: #ffffff; height: 2px" />
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipisicing
+                            elit.
+                        </p>
+                        <p>© 2025 Copyright: Nollie</p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold">Category</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #ffffff; height: 2px" />
+                        <p>
+                            <a href="#!" class="text-black">Sofa</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Armchair</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Table</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Storage</a>
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold">Support</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #ffffff; height: 2px" />
+                        <p>
+                            <a href="#!" class="text-black">Help & Support</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Tearms & Conditions</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Privacy Policy</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Help</a>
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold">Contact</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #ffffff; height: 2px" />
+                        <p><i class="fas fa-home mr-3"></i> Ha Noi, HN 10000, VI</p>
+                        <p><i class="fas fa-envelope mr-3"></i> info@gmail.com</p>
+                        <p><i class="fas fa-phone mr-3"></i> 0123.456.789</p>
+                        <p><i class="fas fa-print mr-3"></i> 0123.456.789</p>
+                    </div>
+                    <!-- Grid column -->
+                </div>
+                <!-- Grid row -->
+            </div>
+        </section>
+        
+
+
+    </footer>
+    <!-- Footer -->
+    </div>
+
+    <script>
+        function showMap(location, button) {
+            const maps = {
+                hanoi: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.856178740812!2d105.7984443154026!3d21.0031179939634!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab8d1f1f1f1f%3A0x0!2zSGFOb2kgQWRkcmVzcw!5e0!3m2!1sen!2s!4v1234567890",
+                hcm: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.1234567890!2d106.7984443154026!3d10.0031179939634!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab8d1f1f1f1f%3A0x0!2zSG9DaU1pbmggQWRkcmVzcw!5e0!3m2!1sen!2s!4v1234567890",
+                danang: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.1234567890!2d108.7984443154026!3d16.0031179939634!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab8d1f1f1f1f%3A0x0!2zRGFOYW5nIEFkZHJlc3M!5e0!3m2!1sen!2s!4v1234567890"
+            };
+            document.getElementById('map').src = maps[location];
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.location-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Add active class to the clicked button
+            button.classList.add('active');
+        }
+    </script>
+    <script src="./about.js"></script>
+</body>
+
+</html>

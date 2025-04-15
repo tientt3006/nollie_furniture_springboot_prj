@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        .edit-coupon-btn {
+            margin-left: 5px;
+            font-size: 0.9rem;
+            padding: 2px 8px;
+            background-color: #000;
+            color: #fff;
+            border: 1px solid #fff;
+        }
+
+        .edit-coupon-btn:hover {
+            background-color: #fff;
+            color: #000;
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrapper">
+
+
+
+        <header class="header">
+            
+                <div class="logo">
+                    <a href="../home/home.html" class="logo-link" style="display: flex; text-decoration: none;">
+                    <img src="../../images/logoonly.png" alt="Logo">
+                    <p class="logo-name">NollieConcept</p>
+                    </a>
+                </div>
+                <div class="nav-right nav-icons">
+                    <div class="user-dropdown">
+                        <img src="../../images/user.png" alt="User" class="icon user-icon">
+                        <div class="dropdown-menu">
+                            <!-- Default options for logged-out users -->
+                            <a href="../io/signin.html" class="dropdown-item" id="signin">Sign In</a>
+                            <a href="../io/signup.html" class="dropdown-item" id="signup">Sign Up</a>
+                            <!-- Options for logged-in users (hidden by default) -->
+                            <a href="../io/userinfo.html" class="dropdown-item" id="info" style="display: none;">Info</a>
+                            <a href="../home/home.html" class="dropdown-item" id="logout" style="display: none;">Logout</a>
+                        </div>
+                    </div>
+                </div>
+        </header>
+
+
+
+        <div class="main-container">
+
+
+
+            <div class="second-main-container">
+                <div class="sidebar">
+                    <h3>Admin</h3>
+                    <a href="./dashboard.html">Dashboard</a>
+                    <a href="./product_management.html">All Products</a>
+                    <a href="./add_product.html">Add Product</a>
+                    <a href="./collection_management.html">All Collectins</a>
+                    <a href="./add_collection.html">Add Collecion</a>
+                    <a href="./option_management.html">All Options</a>
+                    <a href="./add_option.html">Add Option</a>
+                    <a href="./coupon_management.html">All Coupons</a>
+                    <a href="./add_coupon.html">Add Coupons</a>
+                    <a href="./user_management.html">Users</a>
+                    <a href="./order_list.html">Orders</a>
+                    
+                </div>
+
+                <section class="container mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2>Coupon Management</h2>
+                        <div>
+                            <button class="btn btn-dark">Add Coupon</button>
+                            <input type="text" id="search-id-input" class="form-control d-inline-block w-auto" placeholder="Search by ID">
+                            <input type="text" id="search-input" class="form-control d-inline-block w-auto" placeholder="Search coupon name">
+                            <button id="search-button" class="btn btn-outline-secondary">Search</button>
+                        </div>
+                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Code</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Remaining/Total</th>
+                                <th>Value</th>
+                                <th>Total Value</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coupon-table-body">
+                            <!-- Sample coupons -->
+                            <tr>
+                                <td>1</td>
+                                <td>New Year Sale</td>
+                                <td>NY2023</td>
+                                <td>2023-01-01</td>
+                                <td>2023-01-31</td>
+                                <td>50/200</td>
+                                <td>30%</td>
+                                <td>$6000</td>
+                                <td class="action-icons">
+                                    <a href="./edit_coupon.html" class="btn btn-sm btn-outline-primary edit-coupon-btn">Edit Coupon</a>
+                                </td>
+                            </tr>
+                            <!-- Additional coupons will be dynamically added via JS -->
+                        </tbody>
+                    </table>
+                    <div class="d-flex justify-content-between">
+                        <span id="pagination-info">Showing 1-9 of 50</span>
+                        <div>
+                            <button id="prev-page" class="btn btn-outline-secondary">&lt;</button>
+                            <button id="next-page" class="btn btn-outline-secondary">&gt;</button>
+                        </div>
+                    </div>
+                </section>
+                <script>
+                    // Sample coupons data
+                    const coupons = Array.from({ length: 50 }, (_, i) => ({
+                        id: i + 1,
+                        name: `Coupon ${i + 1}`,
+                        code: `CODE${i + 1}`,
+                        startDate: `2023-01-${String(i % 31 + 1).padStart(2, '0')}`,
+                        endDate: `2023-02-${String(i % 28 + 1).padStart(2, '0')}`,
+                        remaining: `${Math.floor(Math.random() * 100)}/${100}`,
+                        value: `${Math.random() > 0.5 ? Math.floor(Math.random() * 50) + '%' : '$' + (Math.random() * 100).toFixed(2)}`,
+                        totalValue: `$${(Math.random() * 1000).toFixed(2)}`,
+                    }));
+
+                    let currentPage = 1;
+                    const rowsPerPage = 9;
+
+                    function renderCoupons(couponList = coupons) {
+                        const tableBody = document.getElementById("coupon-table-body");
+                        tableBody.innerHTML = "";
+
+                        const start = (currentPage - 1) * rowsPerPage;
+                        const end = start + rowsPerPage;
+                        const paginatedCoupons = couponList.slice(start, end);
+
+                        paginatedCoupons.forEach((coupon) => {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${coupon.id}</td>
+                                <td>${coupon.name}</td>
+                                <td>${coupon.code}</td>
+                                <td>${coupon.startDate}</td>
+                                <td>${coupon.endDate}</td>
+                                <td>${coupon.remaining}</td>
+                                <td>${coupon.value}</td>
+                                <td>${coupon.totalValue}</td>
+                                <td class="action-icons">
+                                    <a href="./edit_coupon.html" class="btn btn-sm btn-outline-primary edit-coupon-btn">Edit Coupon</a>
+                                </td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+
+                        document.getElementById("pagination-info").textContent = `Showing ${start + 1}-${Math.min(end, couponList.length)} of ${couponList.length}`;
+                    }
+
+                    document.getElementById("search-button").addEventListener("click", function () {
+                        const searchTerm = document.getElementById("search-input").value.toLowerCase();
+                        const searchId = document.getElementById("search-id-input").value.trim();
+                        const filteredCoupons = coupons.filter(coupon =>
+                            (searchId === "" || coupon.id.toString() === searchId) &&
+                            coupon.name.toLowerCase().includes(searchTerm)
+                        );
+                        renderCoupons(filteredCoupons);
+                    });
+
+                    document.getElementById("prev-page").addEventListener("click", () => {
+                        if (currentPage > 1) {
+                            currentPage--;
+                            renderCoupons();
+                        }
+                    });
+
+                    document.getElementById("next-page").addEventListener("click", () => {
+                        if (currentPage * rowsPerPage < coupons.length) {
+                            currentPage++;
+                            renderCoupons();
+                        }
+                    });
+
+                    renderCoupons();
+                </script>
+            </div>
+        </div>
+    </div>
+    <script src="admin.js"></script>
+</body>
+
+</html>
