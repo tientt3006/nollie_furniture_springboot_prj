@@ -1,0 +1,22 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: "Nollie Furniture Store"
+  datasource:
+    url: ${DBMS_CONNECTION:jdbc:sqlserver://localhost;databaseName=NollieFurnitureStoreDB;trustServerCertificate=true}
+    driverClassName: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+    password: ${DBMS_PASSWORD}
+    username: ${DBMS_USERNAME}
+  jpa:
+    hibernate:
+      ddl-auto: validate # update # none
+    show-sql: true
+
+jwt:
+  signerKey: ${JWT_SIGNER_KEY}
+  valid-duration: 3600 # in second
+  refreshable-duration: 36000 # in seconds
