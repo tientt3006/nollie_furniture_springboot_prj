@@ -2,99 +2,322 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>indiv.neitdev</groupId>
 	<artifactId>nollie_furniture</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>nollie_furniture</name>
 	<description>Furniture store webpage project for Spring Boot</description>
 	<url/>
+
 	<licenses>
 		<license/>
 	</licenses>
+
 	<developers>
 		<developer/>
 	</developers>
+
 	<scm>
 		<connection/>
 		<developerConnection/>
 		<tag/>
 		<url/>
 	</scm>
+
 	<properties>
 		<java.version>21</java.version>
+		<projectlombok-lombok.version>1.18.36</projectlombok-lombok.version>
+		<mapstruct.version>1.5.5.Final</mapstruct.version>
+		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+		<spotless.version>2.43.0</spotless.version>
+		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+		<springboot-starter.version>3.4.4</springboot-starter.version>
+		<spring-security-crypto.version>6.4.4</spring-security-crypto.version>
 	</properties>
+
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
+		<!--		Đây là một trong những starter cốt lõi của Spring Boot để xây dựng các ứng dụng web. Nó bao gồm các dependency cần thiết để phát triển ứng dụng web, bao gồm:
+Spring MVC: Framework để xây dựng các ứng dụng web.
+Tomcat: Embedded servlet container để chạy ứng dụng web.
+Jackson: Thư viện để xử lý JSON (ví dụ: chuyển đổi giữa các đối tượng Java và JSON).-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<version>${springboot-starter.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
+		<!--		cung cấp các thư viện cần thiết để viết unit test và integration test cho ứng dụng Spring Boot. Nó bao gồm:
+JUnit: Framework để viết unit test.
+Spring Test: Hỗ trợ test các thành phần của Spring.
+Hamcrest: Thư viện để viết các matcher (kiểm tra điều kiện) trong test.
+Mockito: Framework để tạo các đối tượng giả (mock object) cho việc test.-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+			<version>${springboot-starter.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!--		cung cấp các thư viện cần thiết để làm việc với cơ sở dữ liệu quan hệ bằng JPA (Java Persistence API) và Spring Data JPA. Nó bao gồm:
+        Spring Data JPA:  Giúp đơn giản hóa việc truy cập cơ sở dữ liệu bằng cách giảm thiểu lượng code boilerplate cần thiết.
+        Hibernate: Một implementation phổ biến của JPA.
+        JDBC driver: Driver cho cơ sở dữ liệu mà bạn đang sử dụng-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<version>${springboot-starter.version}</version>
+		</dependency>
+		<!--		cung cấp các thư viện cần thiết để thực hiện validation (xác thực) dữ liệu đầu vào.  Nó sử dụng Bean Validation API (thường là implementation Hibernate Validator) để định nghĩa các ràng buộc (constraints) cho các trường của một đối tượng (ví dụ: @NotNull, @Size, @Email)-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+			<version>${springboot-starter.version}</version>
+		</dependency>
+		<!--hỗ trợ việc xây dựng các máy chủ tài nguyên (resource server) OAuth 2.0.  Nó cung cấp các công cụ cần thiết để bảo vệ các tài nguyên của bạn (ví dụ: API) bằng cách xác thực các yêu cầu đến bằng các token OAuth 2.0.-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+			<version>${springboot-starter.version}</version>
+		</dependency>
+		<!--các tính năng như xác thực (authentication) và phân quyền (authorization).-->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-security</artifactId>-->
+<!--			<version>${springboot-starter.version}</version>-->
+<!--		</dependency>-->
+		<!--	Automatic Restart, LiveReload, Caching, Property Defaults, Remote Debugging Support, Global Settings-->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-devtools</artifactId>-->
+<!--			<version>${springboot-starter.version}</version>-->
+<!--			<scope>runtime</scope>-->
+<!--			<optional>true</optional>-->
+<!--		</dependency>-->
+		<!--			mã hóa mật khẩu trước khi lưu trữ chúng trong cơ sở dữ liệu-->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
-			<scope>test</scope>
+			<artifactId>spring-security-crypto</artifactId>
+			<version>${spring-security-crypto.version}</version>
 		</dependency>
+		<!--Cung cấp các chức năng để tạo, phân tích cú pháp, xác thực và xử lý JSON Web Tokens (JWT)-->
+		<!--		<dependency>-->
+<!--			<groupId>com.nimbusds</groupId>-->
+<!--			<artifactId>nimbus-jose-jwt</artifactId>-->
+<!--			<version>9.47</version>-->
+<!--		</dependency>-->
+<!--		no need nimbus above cause of oauth2 include it already-->
+<!--		Cung cấp các tiện ích để kiểm thử các ứng dụng Spring Security. Nó bao gồm các tính năng hỗ trợ viết các bài kiểm tra cho việc xác thực, ủy quyền và các khía cạnh bảo mật khác.-->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.security</groupId>-->
+<!--			<artifactId>spring-security-test</artifactId>-->
+<!--			<version>6.4.4</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+<!--		Cung cấp trình điều khiển JDBC (Java Database Connectivity) cho phép ứng dụng Java kết nối và tương tác với cơ sở dữ liệu MySQL.-->
+<!--		<dependency>-->
+<!--			<groupId>com.mysql</groupId>-->
+<!--			<artifactId>mysql-connector-j</artifactId>-->
+<!--			<scope>compile</scope>-->
+<!--		</dependency>-->
+		<!--		Cung cấp trình điều khiển JDBC (Java Database Connectivity) cho phép ứng dụng Java kết nối và tương tác với cơ sở dữ liệu Microsoft SQL Server.-->
+
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>mssql-jdbc</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<!--	giảm lượng boilerplate code, đặc biệt là các phương thức getter, setter, equals, hashCode, và toString. Nó sử dụng các annotation để tự động tạo ra code này trong quá trình biên dịch.-->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${projectlombok-lombok.version}</version>
+			<scope>annotationProcessor</scope>
+		<!--	<scope>provided</scope> -->
+		<!--	:annotationProcessor - phạm vi compile và test, provided thì chỉ trong compile-->
+		</dependency>
+		<!--	giúp đơn giản hóa việc chuyển đổi giữa các đối tượng (ví dụ: DTO và Entity)-->
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
+			<scope>annotationProcessor</scope>
+			<!--	<scope>provided</scope>-->
+		</dependency>
+		<!--		-->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok-mapstruct-binding</artifactId>
+			<version>${lombok-mapstruct-binding.version}</version>
+			<scope>annotationProcessor</scope>
+		</dependency>
+		<!--	 là một module của thư viện Jackson, một thư viện Java phổ biến để xử lý JSON. Module này cung cấp khả năng hỗ trợ các kiểu dữ liệu ngày và giờ mới trong Java 8 (và các phiên bản sau) một cách chính xác.  Cụ thể, nó giúp Jackson có thể serialize (chuyển đổi đối tượng Java thành JSON) và deserialize (chuyển đổi JSON thành đối tượng Java) các kiểu dữ liệu như LocalDate, LocalDateTime, Instant,-->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.18.3</version>
+		</dependency>
+		<!--		Cung cấp một cơ sở dữ liệu SQL trong bộ nhớ, chủ yếu được sử dụng cho mục đích thử nghiệm-->
+<!--		<dependency>-->
+<!--			<groupId>com.h2database</groupId>-->
+<!--			<artifactId>h2</artifactId>-->
+<!--			<version>2.2.224</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+		<!--		Cung cấp tích hợp Testcontainers với JUnit Jupiter, framework kiểm tra phổ biến cho Java. Testcontainers cho phép bạn chạy các container Docker trong quá trình kiểm tra của mình.-->
+<!--		<dependency>-->
+<!--			<groupId>org.testcontainers</groupId>-->
+<!--			<artifactId>junit-jupiter</artifactId>-->
+<!--			<version>5.12.2</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+		<!--		Cung cấp một container Docker của MySQL để sử dụng trong quá trình kiểm tra-->
+<!--		<dependency>-->
+<!--			<groupId>org.testcontainers</groupId>-->
+<!--			<artifactId>mysql</artifactId>-->
+<!--			<version>1.20.6</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
 	</dependencies>
+
+<!--	<dependencyManagement>-->
+<!--		<dependencies>-->
+<!--			<dependency>-->
+<!--				<groupId>org.testcontainers</groupId>-->
+<!--				<artifactId>testcontainers-bom</artifactId>-->
+<!--				<version>1.19.7</version>-->
+<!--				<type>pom</type>-->
+<!--				<scope>import</scope>-->
+<!--			</dependency>-->
+<!--	Project Object Model-->
+<!--	Testcontainers là một thư viện Java cho phép bạn chạy các container Docker trong quá trình tích hợp (integration) test.  Ví dụ: bạn có thể khởi động một container cơ sở dữ liệu (như MySQL, PostgreSQL) để kiểm tra code của bạn mà không cần cài đặt cơ sở dữ liệu đó trên máy của bạn.
+testcontainers-bom chứa thông tin về phiên bản của nhiều thư viện Testcontainers khác nhau.  Điều này giúp bạn đảm bảo rằng tất cả các thư viện Testcontainers bạn sử dụng trong dự án của bạn tương thích với nhau.-->
+<!--		</dependencies>-->
+<!--	</dependencyManagement>-->
 
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>${projectlombok-lombok.version}</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>${lombok-mapstruct-binding.version}</version>
+						</path>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
 						</path>
 					</annotationProcessorPaths>
+<!--					Cung cấp các đối số dòng lệnh cho trình biên dịch Java (javac).-->
+					<compilerArgs>
+<!--						Cấu hình MapStruct để không tạo dấu thời gian trong code được tạo ra.-->
+						<arg>-Amapstruct.suppressGeneratorTimestamp=true</arg>
+<!--						 Cấu hình MapStruct để sử dụng Spring's dependency injection (@Autowired) trong code được tạo của nó.-->
+						<arg>-Amapstruct.defaultComponentModel=spring</arg>
+<!--						Cấu hình MapStruct để in thông tin chi tiết trong quá trình biên dịch.-->
+						<arg>-Amapstruct.verbose=true</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+<!--					Chỉ định các dependency nào sẽ không được đóng gói vào ứng dụng có thể thực thi (ví dụ: JAR hoặc WAR file).-->
 					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
+<!--						<exclude>-->
+<!--							<groupId>org.projectlombok</groupId>-->
+<!--							<artifactId>lombok</artifactId>-->
+<!--						</exclude>-->
+<!--						không cần exclude nữa vì đã có scope-->
 					</excludes>
 				</configuration>
 			</plugin>
+<!--			cấu hình Spotless Maven Plugin. Spotless là một plugin giúp đảm bảo code của bạn tuân theo một định dạng nhất quán.-->
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<version>${spotless.version}</version>
+				<configuration>
+<!--					 Định nghĩa các quy tắc định dạng cho các file Java.-->
+					<java>
+<!--						Tự động xóa các import không sử dụng.-->
+						<removeUnusedImports />
+<!--						 Hỗ trợ các comment đặc biệt để tắt/bật định dạng Spotless trong một phần của file-->
+						<toggleOffOn/>
+						<trimTrailingWhitespace/>
+						<endWithNewline/>
+						<indent>
+							<tabs>true</tabs>
+							<spacesPerTab>4</spacesPerTab>
+						</indent>
+<!--						 Sử dụng code formatter Palantir Java Format để định dạng code Java.-->
+						<palantirJavaFormat/>
+<!--						Sắp xếp thứ tự các câu lệnh import.-->
+						<importOrder>
+							<!-- Chỉ định thứ tự import. -->
+							<order>java,jakarta,org,com,com.diffplug,</order>
+						</importOrder>
+					</java>
+				</configuration>
+<!--				Cấu hình thời điểm sẽ chạy spotless, ko cấu hình phần này sẽ không chạy spotless-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<phase>compile</phase>-->
+<!--						<goals>-->
+<!--							<goal>check</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+			</plugin>
+<!--			Cấu hình JaCoCo agent để đo lường code coverage khi bạn chạy các bài kiểm tra.
+				Tạo báo cáo coverage sau khi các bài kiểm tra đã chạy và trước khi ứng dụng được đóng gói.
+				Loại trừ một số gói nhất định khỏi báo cáo coverage.  Điều này thường được thực hiện để bỏ qua code được tạo tự động hoặc code không quan trọng đối với việc kiểm tra logic nghiệp vụ cốt lõi.-->
+<!--			<plugin>-->
+<!--				<groupId>org.jacoco</groupId>-->
+<!--				<artifactId>jacoco-maven-plugin</artifactId>-->
+<!--				<version>0.8.12</version>-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<goals>-->
+<!--							<goal>prepare-agent</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--					<execution>-->
+<!--						<id>report</id>-->
+<!--						<phase>prepare-package</phase>-->
+<!--						<goals>-->
+<!--							<goal>report</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--				<configuration>-->
+<!--					<excludes>-->
+<!--						<exclude>indiv/neitdev/nollie_furniture/dto/**</exclude>-->
+<!--						<exclude>indiv/neitdev/nollie_furniture/entity/**</exclude>-->
+<!--						<exclude>indiv/neitdev/nollie_furniture/mapper/**</exclude>-->
+<!--						<exclude>indiv/neitdev/nollie_furniture/configuration/**</exclude>-->
+<!--					</excludes>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
 		</plugins>
 	</build>
 
