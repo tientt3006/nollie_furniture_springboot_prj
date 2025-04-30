@@ -15,6 +15,7 @@ public class UserCreateRequest {
     @NotBlank(message = "USERNAME_REQUIRED")
     String fullName;
 
+    @NotBlank(message = "EMAIL_REQUIRED")
     String email;
 
     @Size(min = 4, max = 50, message = "INVALID_PASSWORD")

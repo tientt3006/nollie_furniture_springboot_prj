@@ -9,6 +9,7 @@ import indiv.neitdev.nollie_furniture.dto.request.AuthenticationRequest;
 import indiv.neitdev.nollie_furniture.dto.request.IntrospectRequest;
 import indiv.neitdev.nollie_furniture.dto.response.AuthenticationResponse;
 import indiv.neitdev.nollie_furniture.dto.response.IntrospectResponse;
+import indiv.neitdev.nollie_furniture.entity.InvalidatedToken;
 import indiv.neitdev.nollie_furniture.entity.User;
 import indiv.neitdev.nollie_furniture.exception.AppException;
 import indiv.neitdev.nollie_furniture.exception.ErrorCode;
@@ -21,16 +22,13 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.StringJoiner;
 import java.util.UUID;
 
 @Service
@@ -69,8 +67,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public IntrospectResponse introspect(IntrospectRequest introspectRequest) throws JOSEException, ParseException {
-        var token = introspectRequest.getToken();
+    public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
+        String token = request.getToken();
         boolean isValid = true;
 
         try {
@@ -129,6 +127,43 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
 
         return signedJWT;
+    }
+
+    public AuthenticationResponse refreshToken(IntrospectRequest request) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(request.getToken(), true);
+
+        var jit = signedJWT.getJWTClaimsSet().getJWTID();
+        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken =
+                InvalidatedToken.builder().id(jit).expiryTime(expiryTime).build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+
+        var email = signedJWT.getJWTClaimsSet().getSubject();
+
+        var user =
+                userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        var newToken = generateToken(user);
+
+        return AuthenticationResponse.builder().token(newToken).authenticated(true).build();
+    }
+
+    public void logout(IntrospectRequest request) throws ParseException, JOSEException {
+        try {
+            var signToken = verifyToken(request.getToken(), true);
+
+            String jit = signToken.getJWTClaimsSet().getJWTID();
+            Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+            InvalidatedToken invalidatedToken =
+                    InvalidatedToken.builder().id(jit).expiryTime(expiryTime).build();
+
+            invalidatedTokenRepository.save(invalidatedToken);
+        } catch (AppException exception) {
+            log.info("Token already expired");
+        }
     }
 
 //    private String buildScope(User user) {

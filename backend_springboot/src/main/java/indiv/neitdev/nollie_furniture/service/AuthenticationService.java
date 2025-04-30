@@ -11,5 +11,11 @@ import java.text.ParseException;
 
 public interface AuthenticationService {
     AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest);
-    IntrospectResponse introspect(IntrospectRequest introspectRequest) throws JOSEException, ParseException;
+
+    // Use for client validate token, in this monolithic app just validate in security filter
+    IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException;
+
+    AuthenticationResponse refreshToken(IntrospectRequest request) throws ParseException, JOSEException, ParseException;
+
+    void logout(IntrospectRequest request) throws ParseException, JOSEException;
 }

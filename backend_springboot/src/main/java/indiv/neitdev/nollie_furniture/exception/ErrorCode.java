@@ -16,6 +16,7 @@ public enum ErrorCode {
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     USERNAME_REQUIRED(1009, "Your name should not be blanked", HttpStatus.BAD_REQUEST),
+    EMAIL_REQUIRED(1010, "Your email should not be blanked", HttpStatus.BAD_REQUEST),
     ;
 
 

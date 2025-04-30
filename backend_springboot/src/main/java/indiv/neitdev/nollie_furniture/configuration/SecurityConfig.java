@@ -24,10 +24,10 @@ import java.util.List;
 public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/p", "/user", "/auth/login", "/auth/introspect", "/auth/logout", "/auth/refresh"
+            "/", "/user", "/auth/login", "/auth/introspect", "/auth/logout", "/auth/refresh"
     };
     private static final String[] ADMIN_ENDPOINTS = {
-            "/"
+            "/a"
     };
     private static final String[] STAFF_ENDPOINTS = {
             "/s"
