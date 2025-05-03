@@ -127,42 +127,53 @@
             <form>
                 <div class="input-group">
                     <div>
-                        <label>First Name</label>
-                        <input type="text" value="Alexa" disabled>
+                        <label>Full Name</label>
+                        <input type="text" class="user-fullname" value="Alexa" disabled>
                     </div>
                     <div>
-                        <label>Country</label>
-                        <input type="text" value="USA" disabled>
-                    </div>
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label>Last Name</label>
-                        <input type="text" value="Rawles" disabled>
-                    </div>
-                    <div>
-                        <label>City / Region</label>
-                        <input type="text" value="New York" disabled>
+                        <label>Old Password</label>
+                        <div class="password-container" style="width: auto;">
+                            <input type="password" class="password-input old-password" placeholder="Password" disabled>
+                            <button type="button" class="toggle-password">
+                                <img src="../../images/eyeopen.png" alt="Show Password" class="toggle-icon">
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="input-group">
                     <div>
                         <label>Phone</label>
-                        <input type="text" value="123-456-7890" disabled>
+                        <input type="text" class="user-phone" value="123-456-7890" disabled>
                     </div>
                     <div>
-                        <label>Provide</label>
-                        <input type="text" value="Service" disabled>
+                        <label>New Password</label>
+                        <div class="password-container" style="width: auto;">
+                            <input type="password" class="password-input new-password" placeholder="Password" disabled>
+                            <button type="button" class="toggle-password">
+                                <img src="../../images/eyeopen.png" alt="Show Password" class="toggle-icon">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label>Address</label>
+                        <input type="text" class="user-address" value="123 Main Street" disabled>
+                    </div>
+                    <div>
+                        <label>ReEnter New Password</label>
+                        <div class="password-container" style="width: auto;">
+                            <input type="password" class="password-input renew-password" placeholder="Password" disabled>
+                            <button type="button" class="toggle-password">
+                                <img src="../../images/eyeopen.png" alt="Show Password" class="toggle-icon">
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="input-group">
                     <div>
                         <label>Email</label>
-                        <input type="email" value="alexarawles@gmail.com" disabled>
-                    </div>
-                    <div>
-                    <label>Street Address</label>
-                    <input type="text" value="123 Main Street" disabled>
+                        <input type="email" class="user-email" value="alexarawles@gmail.com" disabled>
                     </div>
                 </div>
                 <div class="new-email-group">
@@ -278,6 +289,7 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="userinfo.js"></script>
 </body>
 
 </html>

@@ -1,73 +1,3 @@
-document.querySelectorAll('.toggle-password').forEach(button => {
-    button.addEventListener('click', function () {
-        const passwordInput = this.previousElementSibling; // Lấy input liền trước nút
-        const toggleIcon = this.querySelector('.toggle-icon'); // Lấy icon trong nút
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            toggleIcon.src = '../../images/eyeclose.png'; // Đổi icon thành "ẩn"
-        } else {
-            passwordInput.type = 'password';
-            toggleIcon.src = '../../images/eyeopen.png'; // Đổi icon thành "hiện"
-        }
-    });
-});
-function toggleEdit() {
-    const inputs = document.querySelectorAll("input");
-    const editButton = document.querySelector(".buttons button:first-child");
-    const sendButton = document.getElementById("send-code");
-    const newEmailGroup = document.querySelector(".new-email-group");
-    const newEmailInput = document.getElementById("new-email");
-    const emailCodeInput = document.getElementById("email-code");
-    const emailInput = document.querySelector("input[type='email']");
-
-    if (editButton.textContent === "Edit") {
-        // Chuyển sang chế độ chỉnh sửa
-        inputs.forEach(input => input.disabled = false);
-        newEmailInput.disabled = false;
-        emailCodeInput.disabled = false;
-        sendButton.disabled = false;
-        newEmailGroup.style.display = "flex"; // Hiển thị nhóm new-email-group
-        editButton.textContent = "Save";
-    } else {
-        // Lưu thông tin
-        const newEmail = newEmailInput.value;
-        const currentEmail = emailInput.value;
-
-        if (newEmail && newEmail !== currentEmail) {
-            const emailCode = emailCodeInput.value;
-            if (!emailCode) {
-                alert("Please enter the code sent to your current email.");
-                return;
-            }
-            // Gửi API để xác nhận email mới
-            console.log("Sending API request to update email...");
-        }
-
-        // Gửi API để lưu thông tin khác
-        console.log("Saving user information...");
-        inputs.forEach(input => input.disabled = true);
-        newEmailInput.disabled = true;
-        emailCodeInput.disabled = true;
-        sendButton.disabled = true;
-        newEmailGroup.style.display = "none"; // Ẩn nhóm new-email-group
-        editButton.textContent = "Edit";
-    }
-}
-
-// Xử lý nút Send
-// document.getElementById("send-code").addEventListener("click", function () {
-//     const newEmail = document.getElementById("new-email").value;
-//     if (!newEmail) {
-//         alert("Please enter a new email to send the code.");
-//         return;
-//     }
-//     console.log("Sending code to new email:", newEmail);
-//     alert("A code has been sent to your new email.");
-// });
-
-
-
-
 // cart
 
 
@@ -116,11 +46,10 @@ const signupItem = document.getElementById("signup");
 const infoItem = document.getElementById("info");
 const logoutItem = document.getElementById("logout");
 
-// Simulate login state (replace with actual logic)
-let isLoggedIn = false;
-
+// Update dropdown menu based on login state
 function updateDropdownMenu() {
-    if (isLoggedIn) {
+    const token = localStorage.getItem("authToken");
+    if (token) {
         signinItem.style.display = "none";
         signupItem.style.display = "none";
         infoItem.style.display = "block";
@@ -136,18 +65,31 @@ function updateDropdownMenu() {
 // Update dropdown menu on page load
 updateDropdownMenu();
 
-// Example: Toggle login state on logout click
-logoutItem.addEventListener("click", (event) => {
+// Logout functionality
+logoutItem.addEventListener("click", async (event) => {
     event.preventDefault();
-    isLoggedIn = false;
-    updateDropdownMenu();
-});
-
-// Example: Simulate login on sign-in click
-signinItem.addEventListener("click", (event) => {
-    event.preventDefault();
-    isLoggedIn = true;
-    updateDropdownMenu();
+    const token = localStorage.getItem("authToken");
+    if (token) {
+        try {
+            const response = await fetch("http://127.0.0.1:8080/api/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ token }),
+            });
+            const data = await response.json();
+            if (data.code === 1000) {
+                localStorage.removeItem("authToken");
+                updateDropdownMenu();
+                window.location.href = "../io/signin.html";
+            } else {
+                console.error("Failed to logout: Invalid response code");
+            }
+        } catch (error) {
+            console.error("Failed to logout:", error);
+        }
+    }
 });
 
 userIcon.addEventListener("click", (event) => {
@@ -173,7 +115,7 @@ function allSidebarOff() {
     searchPopup.classList.remove('show');
 }
 
-// serach popup
+// search popup
 const searchIcon = document.querySelector(".nav-icons img[alt='Search']");
 const searchPopup = document.getElementById("search-popup");
 const searchInput = document.getElementById("search-input");
@@ -212,6 +154,5 @@ function performSearch() {
 }
 
 function showAllResults() {
-    alert("Redirecting to all results page...");
     // Implement redirection logic here
 }

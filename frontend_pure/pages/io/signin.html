@@ -125,6 +125,7 @@
                 <a href="#" class="forget-password">Forget Password?</a>
                 <button type="submit" class="btn signinBtn">Sign In</button>
             </form>
+            <p class="error-message" style="color: red; margin-top: 10px;"></p> <!-- Error message container -->
             <p>Don't have an account? <a href="../io/signup.html" class="link"> Sign Up </a></p>
             </div>
         </div>
@@ -224,13 +225,14 @@
     </div>
 
     <script src="script.js"></script>
-    <script>
+    <script src="signin.js"></script>
+    <!-- <script>
         // nut signin
         document.querySelector(".signinBtn").addEventListener("click", function (event) {
             event.preventDefault(); // Prevent form submission
             window.location.href = "../io/userinfo.html"; 
         });
-    </script>
+    </script> -->
 </body>
 
 </html>
