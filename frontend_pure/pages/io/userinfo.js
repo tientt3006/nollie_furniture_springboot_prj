@@ -43,6 +43,10 @@ async function toggleEdit() {
 
         const token = localStorage.getItem("authToken");
         if (!token) {
+            const errorMessage = document.getElementById("error-message");
+            if (errorMessage) {
+                errorMessage.textContent = "You need to log in.";
+            }
             window.location.href = "../io/signin.html";
             return;
         }
@@ -111,6 +115,74 @@ async function toggleEdit() {
         } catch (error) {
             console.error("Error updating user info:", error);
         }
+
+        // Handle password change
+        const oldPassword = document.querySelector(".old-password").value;
+        const newPassword = document.querySelector(".new-password").value;
+        const reNewPassword = document.querySelector(".renew-password").value;
+        const passwordErrorMessage = document.getElementById("password-error-message");
+
+        if(oldPassword || newPassword || reNewPassword){
+            if (!oldPassword || !newPassword || !reNewPassword) {
+                if (passwordErrorMessage) {
+                    passwordErrorMessage.textContent = "Please fill in all password fields.";
+                }
+                return;
+            }
+        
+            if (newPassword !== reNewPassword) {
+                if (passwordErrorMessage) {
+                    passwordErrorMessage.textContent = "New password and re-entered password do not match.";
+                }
+                return;
+            }
+    
+            try {
+                const response = await fetch("http://127.0.0.1:8080/api/user/change-password", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ oldPassword, newPassword }),
+                });
+        
+                const data = await response.json();
+        
+                if (data.code === 1000) {
+                    if (passwordErrorMessage) {
+                        passwordErrorMessage.style.color = "green";
+                        passwordErrorMessage.textContent = "Password changed successfully.";
+                    }
+                    document.querySelector(".old-password").value = "";
+                    document.querySelector(".new-password").value = "";
+                    document.querySelector(".renew-password").value = "";
+                    return;
+                } else if (data.code === 1012) {
+                    // Old password not correct
+                    if (!passwordErrorMessage) {
+                        const errorDiv = document.createElement("div");
+                        errorDiv.id = "password-error-message";
+                        errorDiv.style.color = "red";
+                        errorDiv.textContent = data.message;
+                        document.querySelector(".userinfo-main").appendChild(errorDiv);
+                    } else {
+                        passwordErrorMessage.textContent = data.message;
+                    }
+                } else {
+                    if (passwordErrorMessage) {
+                        passwordErrorMessage.textContent = "Failed to change password: " + (data.message || "Unknown error");
+                    }
+                    return;
+                }
+            } catch (error) {
+                console.error("Error changing password:", error);
+                if (passwordErrorMessage) {
+                    passwordErrorMessage.textContent = "An error occurred. Please try again later.";
+                }
+            }
+        }
+        
     }
 }
 
@@ -123,73 +195,19 @@ function cancelEdit() {
 document.getElementById("send-code").addEventListener("click", function () {
     const newEmail = document.getElementById("new-email").value;
     if (!newEmail) {
-        alert("Please enter a new email to use send-code.");
+        const errorMessage = document.getElementById("error-message");
+        if (errorMessage) {
+            errorMessage.textContent = "Please enter a new email to use send-code.";
+        }
         return;
     }
     console.log("Sending code to old email:");
-    alert("A code has been sent to your old email.");
+    const emailMessage = document.getElementById("error-message");
+    if (emailMessage) {
+        emailMessage.style.color = "green";
+        emailMessage.textContent = "A code has been sent to your old email.";
+    }
 });
-
-// Function to handle the "Change Password" button click event
-async function changePassword() {
-    const oldPassword = document.querySelector(".old-password").value;
-    const newPassword = document.querySelector(".new-password").value;
-    const reNewPassword = document.querySelector(".renew-password").value;
-    const errorMessage = document.getElementById("password-error-message");
-
-    if (!oldPassword || !newPassword || !reNewPassword) {
-        alert("Please fill in all password fields.");
-        return;
-    }
-
-    if (newPassword !== reNewPassword) {
-        alert("New password and re-entered password do not match.");
-        return;
-    }
-
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-        window.location.href = "../io/signin.html";
-        return;
-    }
-
-    try {
-        const response = await fetch("http://127.0.0.1:8080/api/user/change-password", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-            },
-            body: JSON.stringify({ oldPassword, newPassword }),
-        });
-
-        const data = await response.json();
-
-        if (data.code === 1000) {
-            alert("Password changed successfully.");
-            document.querySelector(".old-password").value = "";
-            document.querySelector(".new-password").value = "";
-            document.querySelector(".renew-password").value = "";
-            if (errorMessage) errorMessage.textContent = ""; // Clear any previous error
-        } else if (data.code === 1012) {
-            // Old password not correct
-            if (!errorMessage) {
-                const errorDiv = document.createElement("div");
-                errorDiv.id = "password-error-message";
-                errorDiv.style.color = "red";
-                errorDiv.textContent = data.message;
-                document.querySelector(".userinfo-main").appendChild(errorDiv);
-            } else {
-                errorMessage.textContent = data.message;
-            }
-        } else {
-            alert("Failed to change password: " + (data.message || "Unknown error"));
-        }
-    } catch (error) {
-        console.error("Error changing password:", error);
-        alert("An error occurred. Please try again later.");
-    }
-}
 
 
 // Function to fetch and display user information
@@ -197,7 +215,10 @@ async function fetchUserInfo() {
     const token = localStorage.getItem("authToken");
 
     if (!token) {
-        alert("You need to log in.");
+        const errorMessage = document.getElementById("error-message");
+        if (errorMessage) {
+            errorMessage.textContent = "You need to log in.";
+        }
         window.location.href = "../io/signin.html";
         return;
     }
@@ -219,7 +240,11 @@ async function fetchUserInfo() {
             document.querySelector(".user-phone").value = userInfo.phone;
             document.querySelector(".user-address").value = userInfo.address;
         } else {
-            alert("Failed to fetch user info: " + (data.message || "Unknown error"));
+            const errorMessage = document.getElementById("error-message");
+            if (errorMessage) {
+                errorMessage.textContent = "Failed to fetch user info: " + (data.message || "Unknown error");
+            }
+            return;
         }
         // Try to refresh the token first
         const refreshResponse = await fetch("http://127.0.0.1:8080/api/auth/refresh", {
@@ -238,13 +263,21 @@ async function fetchUserInfo() {
             return;
         } else {
             // Refresh failed, stay on login page
+            const errorMessage = document.getElementById("error-message");
+            if (errorMessage) {
+                errorMessage.textContent = "Session expired. Please log in again.";
+            }
             localStorage.removeItem("authToken");
             window.location.href = "../io/signin.html";
+            return;
         }
     } catch (error) {
         console.error("Error fetching user info:", error);
+        const errorMessage = document.getElementById("error-message");
+        if (errorMessage) {
+            errorMessage.textContent = "An error occurred. Please try again later.";
+        }
         localStorage.removeItem("authToken");
-        alert("An error occurred. Please try again later.");
     }
 }
 
