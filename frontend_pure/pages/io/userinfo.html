@@ -116,24 +116,24 @@
             <img src="../../images/userinfo-banner.png" alt="User" class="user-icon">
             <div class="header2">
                 <div>
-                    <h3>Alexa Rawles</h3>
-                    <p>alexarawles@gmail.com</p>
+                    <h3 style="margin-top: 10px;">Well come!</h3>
+                    <p>Change your info here</p>  
                 </div>
                 <div class="buttons">
                     <button onclick="toggleEdit()">Edit</button>
-                    <a href="../io/change_password.html" style="text-decoration: none; color: inherit;"><button>Change Password</button></a>
+                    <button id="cancel-edit" onclick="cancelEdit()" style="display: none;">Cancel Edit</button>
                 </div>
             </div>
             <form>
                 <div class="input-group">
                     <div>
                         <label>Full Name</label>
-                        <input type="text" class="user-fullname" value="Alexa" disabled>
+                        <input type="text" class="user-fullname" value="" disabled>
                     </div>
                     <div>
                         <label>Old Password</label>
                         <div class="password-container" style="width: auto;">
-                            <input type="password" class="password-input old-password" placeholder="Password" disabled>
+                            <input type="password" class="password-input old-password" placeholder="Enter old password" disabled>
                             <button type="button" class="toggle-password">
                                 <img src="../../images/eyeopen.png" alt="Show Password" class="toggle-icon">
                             </button>
@@ -143,12 +143,12 @@
                 <div class="input-group">
                     <div>
                         <label>Phone</label>
-                        <input type="text" class="user-phone" value="123-456-7890" disabled>
+                        <input type="text" class="user-phone" value="" disabled>
                     </div>
                     <div>
                         <label>New Password</label>
                         <div class="password-container" style="width: auto;">
-                            <input type="password" class="password-input new-password" placeholder="Password" disabled>
+                            <input type="password" class="password-input new-password" placeholder="Enter new password" disabled>
                             <button type="button" class="toggle-password">
                                 <img src="../../images/eyeopen.png" alt="Show Password" class="toggle-icon">
                             </button>
@@ -158,12 +158,12 @@
                 <div class="input-group">
                     <div>
                         <label>Address</label>
-                        <input type="text" class="user-address" value="123 Main Street" disabled>
+                        <input type="text" class="user-address" value="" disabled>
                     </div>
                     <div>
-                        <label>ReEnter New Password</label>
+                        <label>Re-enter New Password</label>
                         <div class="password-container" style="width: auto;">
-                            <input type="password" class="password-input renew-password" placeholder="Password" disabled>
+                            <input type="password" class="password-input renew-password" placeholder="Re-enter new password" disabled>
                             <button type="button" class="toggle-password">
                                 <img src="../../images/eyeopen.png" alt="Show Password" class="toggle-icon">
                             </button>
@@ -173,7 +173,7 @@
                 <div class="input-group">
                     <div>
                         <label>Email</label>
-                        <input type="email" class="user-email" value="alexarawles@gmail.com" disabled>
+                        <input type="email" class="user-email" value="" disabled>
                     </div>
                 </div>
                 <div class="new-email-group">
@@ -189,8 +189,9 @@
                         </div>
                     </div>
                 </div>
-                
             </form>
+            <div id="password-error-message" style="color: red; margin-top: 10px;"></div>
+            <div id="error-message" style="color: red; margin-top: 10px;"></div>
         </div>
         </div>
           

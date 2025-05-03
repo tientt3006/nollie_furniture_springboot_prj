@@ -17,6 +17,8 @@ public enum ErrorCode {
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     USERNAME_REQUIRED(1009, "Your name should not be blanked", HttpStatus.BAD_REQUEST),
     EMAIL_REQUIRED(1010, "Your email should not be blanked", HttpStatus.BAD_REQUEST),
+    EMAIL_PHONE_EXISTED(1011, "Your email or phone number already used by other people", HttpStatus.CONFLICT),
+    OLD_PASSWORD_NOT_CORRECT(1012, "Old password not correct", HttpStatus.BAD_REQUEST),
     ;
 
 

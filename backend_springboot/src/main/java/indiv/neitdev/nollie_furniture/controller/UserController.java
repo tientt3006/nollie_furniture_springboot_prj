@@ -1,5 +1,6 @@
 package indiv.neitdev.nollie_furniture.controller;
 
+import indiv.neitdev.nollie_furniture.dto.request.ChangePasswordRequest;
 import indiv.neitdev.nollie_furniture.dto.request.UserUpdateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;
 import indiv.neitdev.nollie_furniture.dto.request.UserCreateRequest;
@@ -66,9 +67,16 @@ public class UserController {
     }
 
     @PutMapping("/update-info")
-    ApiResponse<UserResponse> updateUser(@RequestBody UserUpdateRequest request) {
+    ApiResponse<UserResponse> updateUser(@RequestBody @Valid UserUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUser( request))
+                .build();
+    }
+
+    @PutMapping("/change-password")
+    ApiResponse<UserResponse> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.changePassword(request))
                 .build();
     }
 }

@@ -1,5 +1,6 @@
 package indiv.neitdev.nollie_furniture.service.impl;
 
+import indiv.neitdev.nollie_furniture.dto.request.ChangePasswordRequest;
 import indiv.neitdev.nollie_furniture.dto.request.UserCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.request.UserUpdateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.UserResponse;
@@ -14,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -76,11 +78,39 @@ public class UserServiceImpl implements UserService {
 
         userMapper.updateUser(updateUser, request);
 
-        return userMapper.toUserResponse(userRepository.save(updateUser));
+        try{
+            return userMapper.toUserResponse(userRepository.save(updateUser));
+        } catch (DataIntegrityViolationException e){
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.EMAIL_PHONE_EXISTED);
+        }
+
     }
 
     @Override
     public void deleteUser(Integer userId) {
         userRepository.deleteById(userId);
+    }
+
+    @Override
+    public UserResponse changePassword(ChangePasswordRequest request) {
+        User user = userRepository
+                .findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // Check Old password
+        boolean authenticated = passwordEncoder.matches(request.getOldPassword(), user.getPassword());
+        if (!authenticated) {
+            throw new AppException(ErrorCode.OLD_PASSWORD_NOT_CORRECT);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        try{
+            return userMapper.toUserResponse(userRepository.save(user));
+        } catch (Exception e){
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 }

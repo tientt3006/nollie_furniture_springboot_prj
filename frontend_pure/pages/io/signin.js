@@ -16,6 +16,7 @@ document.querySelectorAll('.toggle-password').forEach(button => {
 // Function to check token validity and handle redirection
 async function checkTokenAndRedirect() {
     const token = localStorage.getItem("authToken");
+    const previousPage = document.referrer; // Get the previous page URL
 
     if (!token) {
         return; // No token, stay on the login page
@@ -34,8 +35,8 @@ async function checkTokenAndRedirect() {
         const introspectData = await introspectResponse.json();
 
         if (introspectData.code === 1000 && introspectData.result.valid) {
-            // Token is valid, redirect to user info page
-            window.location.href = "../io/userinfo.html";
+            // Token is valid, redirect to the previous page or user info page
+            window.location.href = previousPage || "../io/userinfo.html";
             return;
         }
 
@@ -53,7 +54,7 @@ async function checkTokenAndRedirect() {
         if (refreshData.code === 1000 && refreshData.result.authenticated) {
             // Refresh successful, save new token and redirect
             localStorage.setItem("authToken", refreshData.result.token);
-            window.location.href = "../io/userinfo.html";
+            window.location.href = previousPage || "../io/userinfo.html";
         } else {
             // Refresh failed, stay on login page
             localStorage.removeItem("authToken");
@@ -73,6 +74,7 @@ async function handleLogin(event) {
     const email = document.querySelector("input[type='email']").value;
     const password = document.querySelector(".password-input").value;
     const errorMessageElement = document.querySelector(".error-message"); // Select error message container
+    const previousPage = document.referrer; // Get the previous page URL
 
     // Clear any previous error message
     if (errorMessageElement) {
@@ -93,7 +95,7 @@ async function handleLogin(event) {
         if (data.code === 1000 && data.result.authenticated) {
             localStorage.setItem("authToken", data.result.token);
             console.log("Auth Token:", data.result.token); // Log the token to the console
-            window.location.href = "../io/userinfo.html"; // Redirect to user info page
+            window.location.href = previousPage || "../io/userinfo.html"; // Redirect to the previous page or user info page
         } else {
             if (errorMessageElement) {
                 errorMessageElement.textContent = "Wrong email or password.";
