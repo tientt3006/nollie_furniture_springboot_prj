@@ -15,8 +15,22 @@ spring:
     hibernate:
       ddl-auto: validate # update # none
     show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${FROM_EMAIL}
+    password: ${FROM_EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
   valid-duration: 3600 # in second
   refreshable-duration: 36000 # in seconds
+
+app:
+  VERIFICATION_CODE_EXPIRY_PERIOD: 15 # in minus

@@ -85,6 +85,11 @@ Mockito: Framework để tạo các đối tượng giả (mock object) cho vi�
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 			<version>${springboot-starter.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+			<version>${springboot-starter.version}</version>
+		</dependency>
 		<!--các tính năng như xác thực (authentication) và phân quyền (authorization).-->
 <!--		<dependency>-->
 <!--			<groupId>org.springframework.boot</groupId>-->

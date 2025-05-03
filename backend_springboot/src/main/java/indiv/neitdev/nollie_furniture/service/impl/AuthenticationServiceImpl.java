@@ -11,11 +11,16 @@ import indiv.neitdev.nollie_furniture.dto.response.AuthenticationResponse;
 import indiv.neitdev.nollie_furniture.dto.response.IntrospectResponse;
 import indiv.neitdev.nollie_furniture.entity.InvalidatedToken;
 import indiv.neitdev.nollie_furniture.entity.User;
+import indiv.neitdev.nollie_furniture.entity.VerificationCode;
+import indiv.neitdev.nollie_furniture.enums.Role;
 import indiv.neitdev.nollie_furniture.exception.AppException;
 import indiv.neitdev.nollie_furniture.exception.ErrorCode;
 import indiv.neitdev.nollie_furniture.repository.InvalidatedTokenRepository;
 import indiv.neitdev.nollie_furniture.repository.UserRepository;
+import indiv.neitdev.nollie_furniture.repository.VerificationCodeRepository;
 import indiv.neitdev.nollie_furniture.service.AuthenticationService;
+import indiv.neitdev.nollie_furniture.service.MailService;
+import indiv.neitdev.nollie_furniture.util.VerificationCodeUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -27,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
@@ -37,8 +43,11 @@ import java.util.UUID;
 @Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService {
     UserRepository userRepository;
+    VerificationCodeRepository verificationCodeRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
     PasswordEncoder passwordEncoder;
+    VerificationCodeUtil verificationCodeUtil;
+    MailService mailService;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -61,6 +70,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
+        if(user.getActive() == null || !user.getActive()) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_ACTIVE);
+        }
         var token =  generateToken(user);
 
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
@@ -165,6 +177,76 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.info("Token already expired");
         }
     }
+
+    @Override
+    public String verifyVerificationCode(String code) {
+        VerificationCode verificationCode = verificationCodeRepository.findByCode(code);
+
+        if (verificationCode == null) {
+            throw new AppException(ErrorCode.VERIFICATION_CODE_NOT_CORRECT);
+        }
+
+        return "";
+    }
+
+    @Override
+    public String verifyRegistrationCode(String code) {
+        VerificationCode verificationCode = verificationCodeRepository.findByCode(code);
+
+        if (verificationCode == null) {
+            throw new AppException(ErrorCode.VERIFICATION_CODE_NOT_CORRECT);
+        }
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime codeExpiryTime = verificationCode.getExpiresAt();
+
+        if (codeExpiryTime == null || currentTime.isAfter(codeExpiryTime)) {
+            throw new AppException(ErrorCode.VERIFICATION_CODE_NOT_CORRECT);
+        }
+
+        User user = verificationCode.getUser();
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+
+        // Xác thực thành công → kích hoạt tài khoản và vô hiệu hóa mã
+        verificationCode.setCode(null);
+        verificationCode.setExpiresAt(null);
+        user.setActive(true);
+
+        userRepository.save(user);
+        verificationCodeRepository.save(verificationCode); // lưu lại trạng thái mới
+
+        return "valid";
+    }
+
+    @Override
+    public String reSendVerificationCode(String email) {
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        VerificationCode verificationCode = new VerificationCode();
+
+        try {
+            verificationCode = verificationCodeRepository.findByUserId(user.getId());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.VERIFICATION_CODE_FAIL_TO_SEND);
+        }
+
+        verificationCode.setCode(verificationCodeUtil.generateVerificationCode());
+        verificationCode.setExpiresAt(verificationCodeUtil.generateVerificationCodeExpireTime());
+        verificationCodeRepository.save(verificationCode);
+
+        try {
+            mailService.sendRegistrationCode(user, verificationCode);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.VERIFICATION_CODE_FAIL_TO_SEND);
+        }
+        return "Resend successfully";
+    }
+
 
 //    private String buildScope(User user) {
 //        StringJoiner scopeJoiner = new StringJoiner(" ");

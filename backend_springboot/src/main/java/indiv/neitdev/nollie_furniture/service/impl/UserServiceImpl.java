@@ -5,22 +5,31 @@ import indiv.neitdev.nollie_furniture.dto.request.UserCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.request.UserUpdateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.UserResponse;
 import indiv.neitdev.nollie_furniture.entity.User;
+import indiv.neitdev.nollie_furniture.entity.VerificationCode;
 import indiv.neitdev.nollie_furniture.enums.Role;
 import indiv.neitdev.nollie_furniture.exception.AppException;
 import indiv.neitdev.nollie_furniture.exception.ErrorCode;
 import indiv.neitdev.nollie_furniture.mapper.UserMapper;
 import indiv.neitdev.nollie_furniture.repository.UserRepository;
+import indiv.neitdev.nollie_furniture.repository.VerificationCodeRepository;
+import indiv.neitdev.nollie_furniture.service.MailService;
 import indiv.neitdev.nollie_furniture.service.UserService;
+import indiv.neitdev.nollie_furniture.util.VerificationCodeUtil;
+import jakarta.mail.MessagingException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,22 +37,45 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class UserServiceImpl implements UserService {
+
     UserRepository userRepository;
+    VerificationCodeRepository verificationCodeRepository;
     UserMapper userMapper;
+    MailService mailService;
     PasswordEncoder passwordEncoder;
+    VerificationCodeUtil verificationCodeUtil;
 
     @Override
     public UserResponse createUser(UserCreateRequest request) {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.CUSTOMER);
-        user.setActive(true);
+        user.setActive(false);
         try {
             userRepository.save(user);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.USER_EXISTED);
         }
+
+        VerificationCode verificationCode = new VerificationCode();
+        verificationCode.setCode(verificationCodeUtil.generateVerificationCode());
+        verificationCode.setUser(user);
+        verificationCode.setExpiresAt(verificationCodeUtil.generateVerificationCodeExpireTime());
+        try {
+            verificationCodeRepository.save(verificationCode);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
+        try {
+            mailService.sendRegistrationCode(user, verificationCode);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.VERIFICATION_CODE_FAIL_TO_SEND);
+        }
+
         return userMapper.toUserResponse(user);
     }
 
@@ -89,6 +121,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Integer userId) {
+        verificationCodeRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
     }
 
@@ -113,4 +146,5 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
+
 }

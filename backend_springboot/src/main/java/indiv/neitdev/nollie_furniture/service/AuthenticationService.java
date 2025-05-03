@@ -18,4 +18,10 @@ public interface AuthenticationService {
     AuthenticationResponse refreshToken(IntrospectRequest request) throws ParseException, JOSEException, ParseException;
 
     void logout(IntrospectRequest request) throws ParseException, JOSEException;
+
+    String verifyVerificationCode(String code);
+
+    String verifyRegistrationCode(String code);
+
+    String reSendVerificationCode(String email);
 }

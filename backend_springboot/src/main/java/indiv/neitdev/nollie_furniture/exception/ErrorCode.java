@@ -19,6 +19,9 @@ public enum ErrorCode {
     EMAIL_REQUIRED(1010, "Your email should not be blanked", HttpStatus.BAD_REQUEST),
     EMAIL_PHONE_EXISTED(1011, "Your email or phone number already used by other people", HttpStatus.CONFLICT),
     OLD_PASSWORD_NOT_CORRECT(1012, "Old password not correct", HttpStatus.BAD_REQUEST),
+    VERIFICATION_CODE_NOT_CORRECT(1013, "Verification code not correct or expired", HttpStatus.BAD_REQUEST),
+    ACCOUNT_NOT_ACTIVE(1014, "Account not active", HttpStatus.BAD_REQUEST),
+    VERIFICATION_CODE_FAIL_TO_SEND(1015, "Verification code fail to send", HttpStatus.BAD_REQUEST),
     ;
 
 

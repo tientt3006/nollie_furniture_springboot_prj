@@ -34,6 +34,15 @@ CREATE TABLE users (
 
 
 -- 2. Bảng có khóa ngoại tham chiếu các bảng đã có
+CREATE TABLE verification_code (
+	id INT IDENTITY NOT NULL,
+	users_id INT NOT NULL,
+	code VARCHAR(255),
+	created_at DATETIME,
+	expires_at DATETIME,
+	PRIMARY KEY (id),
+	FOREIGN KEY (users_id) REFERENCES users(id)
+);
 CREATE TABLE products (
   id          INT IDENTITY NOT NULL, 
   category_id INT NOT NULL, 

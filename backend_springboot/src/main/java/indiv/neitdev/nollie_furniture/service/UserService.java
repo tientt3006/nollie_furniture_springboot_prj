@@ -4,7 +4,9 @@ import indiv.neitdev.nollie_furniture.dto.request.ChangePasswordRequest;
 import indiv.neitdev.nollie_furniture.dto.request.UserCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.request.UserUpdateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.UserResponse;
+import jakarta.mail.MessagingException;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public interface UserService {

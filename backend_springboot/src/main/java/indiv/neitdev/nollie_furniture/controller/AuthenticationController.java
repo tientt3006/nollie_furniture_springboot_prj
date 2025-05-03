@@ -3,6 +3,8 @@ package indiv.neitdev.nollie_furniture.controller;
 import com.nimbusds.jose.JOSEException;
 import indiv.neitdev.nollie_furniture.dto.request.AuthenticationRequest;
 import indiv.neitdev.nollie_furniture.dto.request.IntrospectRequest;
+import indiv.neitdev.nollie_furniture.dto.request.ReSendVerificationCodeRequest;
+import indiv.neitdev.nollie_furniture.dto.request.RegistrationCodeVerificationRequest;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;
 import indiv.neitdev.nollie_furniture.dto.response.AuthenticationResponse;
 import indiv.neitdev.nollie_furniture.dto.response.IntrospectResponse;
@@ -13,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -61,5 +64,17 @@ public class AuthenticationController {
     ApiResponse<Void> logout(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
         authenticationService.logout(request);
         return ApiResponse.<Void>builder().build();
+    }
+
+    @PostMapping("/verify-new-acct")
+    public ApiResponse<String> verifyUserRegistration(@RequestBody RegistrationCodeVerificationRequest request) {
+        var result = authenticationService.verifyRegistrationCode(request.getVerificationCode());
+        return ApiResponse.<String>builder().result(result).build();
+    }
+
+    @PostMapping("/re-send-verification-code")
+    public ApiResponse<String> verifyUserRegistration(@RequestBody ReSendVerificationCodeRequest request) {
+        var result = authenticationService.reSendVerificationCode(request.getEmail());
+        return ApiResponse.<String>builder().result(result).build();
     }
 }

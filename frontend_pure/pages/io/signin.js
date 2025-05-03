@@ -96,6 +96,12 @@ async function handleLogin(event) {
             localStorage.setItem("authToken", data.result.token);
             console.log("Auth Token:", data.result.token); // Log the token to the console
             window.location.href = previousPage || "../io/userinfo.html"; // Redirect to the previous page or user info page
+        } else if (data.code === 1014 && data.message === "Account not active") { 
+            if (errorMessageElement) {
+                errorMessageElement.textContent = "Account not acctivated.";
+            }
+            localStorage.setItem("email", email);
+            window.location.href = "../io/registration_code_verification.html";
         } else {
             if (errorMessageElement) {
                 errorMessageElement.textContent = "Wrong email or password.";
