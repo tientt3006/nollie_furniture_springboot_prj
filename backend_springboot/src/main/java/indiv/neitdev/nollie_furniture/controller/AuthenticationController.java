@@ -1,16 +1,14 @@
 package indiv.neitdev.nollie_furniture.controller;
 
 import com.nimbusds.jose.JOSEException;
-import indiv.neitdev.nollie_furniture.dto.request.AuthenticationRequest;
-import indiv.neitdev.nollie_furniture.dto.request.IntrospectRequest;
-import indiv.neitdev.nollie_furniture.dto.request.ReSendVerificationCodeRequest;
-import indiv.neitdev.nollie_furniture.dto.request.RegistrationCodeVerificationRequest;
+import indiv.neitdev.nollie_furniture.dto.request.*;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;
 import indiv.neitdev.nollie_furniture.dto.response.AuthenticationResponse;
 import indiv.neitdev.nollie_furniture.dto.response.IntrospectResponse;
 import indiv.neitdev.nollie_furniture.service.AuthenticationService;
 import indiv.neitdev.nollie_furniture.service.UserService;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -76,5 +74,12 @@ public class AuthenticationController {
     public ApiResponse<String> verifyUserRegistration(@RequestBody ReSendVerificationCodeRequest request) {
         var result = authenticationService.reSendVerificationCode(request.getEmail());
         return ApiResponse.<String>builder().result(result).build();
+    }
+
+    @PutMapping("/change-forgot-password")
+    ApiResponse<String> changeForgotPassword(@RequestBody @Valid ChangeForgotPasswordRequest request) {
+        return ApiResponse.<String>builder()
+                .result(authenticationService.changeForgotPassword(request))
+                .build();
     }
 }

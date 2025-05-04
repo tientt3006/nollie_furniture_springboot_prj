@@ -26,6 +26,9 @@ spring:
           auth: true
           starttls:
             enable: true
+  data:
+    couchbase:
+      bucket-name: ${BUCKET_NAME}
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
@@ -34,3 +37,11 @@ jwt:
 
 app:
   VERIFICATION_CODE_EXPIRY_PERIOD: 15 # in minus
+
+aws:
+  s3:
+    secret:
+      key: ${S3_SECRET_KEY}
+    access:
+      key: ${S3_ACCESS_KEY}
+

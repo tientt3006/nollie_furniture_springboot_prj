@@ -32,6 +32,13 @@ document.getElementById('signup-form').addEventListener('submit', async function
         return;
     }
 
+    // Show loading message with animated ellipsis
+    let dots = 0;
+    const loadingInterval = setInterval(() => {
+        dots = (dots + 1) % 4;
+        messageContainer.textContent = `Processing registration${'.'.repeat(dots)}`;
+    }, 500);
+
     try {
         const response = await fetch('http://127.0.0.1:8080/api/user', {
             method: 'POST',
@@ -39,13 +46,17 @@ document.getElementById('signup-form').addEventListener('submit', async function
             body: JSON.stringify({ fullName, email, password })
         });
 
+        clearInterval(loadingInterval); // Stop the loading animation
         const data = await response.json();
 
         if (data.code === 1002) {
             messageContainer.textContent = 'User already exists.';
             messageContainer.classList.add('error');
         } else if (data.code === 1000) {
-            window.location.href = '../io/userinfo.html'; // Redirect on success
+            localStorage.setItem('email', email);
+            messageContainer.textContent = 'Registration successful. Redirecting...';
+            messageContainer.classList.add('success');
+            window.location.href = '../io/registration_code_verification.html';
         } else if (data.code === 1004) {
             messageContainer.textContent = 'Password must be at least 4 characters and max of 50 characters.';
             messageContainer.classList.add('error');
@@ -57,6 +68,7 @@ document.getElementById('signup-form').addEventListener('submit', async function
             messageContainer.classList.add('error');
         }
     } catch (error) {
+        clearInterval(loadingInterval); // Stop the loading animation
         messageContainer.textContent = 'Failed to connect to the server.';
         messageContainer.classList.add('error');
     }

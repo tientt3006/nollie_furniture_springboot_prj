@@ -1,5 +1,5 @@
 document.querySelector(".verifyBtn").addEventListener("click", async function () {
-    const verificationCode = document.querySelector("input[type='text']").value;
+    const verificationCode = document.querySelector(".regs-code").value;
     const errorMessageElement = document.querySelector(".error-message");
 
     // Clear any previous error message
@@ -19,7 +19,10 @@ document.querySelector(".verifyBtn").addEventListener("click", async function ()
         const data = await response.json();
 
         if (data.code === 1000 && data.result === "valid") {
-            window.location.href = "../io/userinfo.html"; // Redirect to user info page
+            localStorage.removeItem("email");
+            localStorage.removeItem("resendCooldown");
+            alert("Verification successful! You can now log in.");
+            window.location.href = "../io/userinfo.html";
         } else if (data.code === 1013) {
             if (errorMessageElement) {
                 errorMessageElement.textContent = "Verification code not correct or expired.";

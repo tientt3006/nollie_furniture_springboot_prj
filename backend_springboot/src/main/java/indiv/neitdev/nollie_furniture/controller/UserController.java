@@ -1,5 +1,6 @@
 package indiv.neitdev.nollie_furniture.controller;
 
+import indiv.neitdev.nollie_furniture.dto.request.ChangeForgotPasswordRequest;
 import indiv.neitdev.nollie_furniture.dto.request.ChangePasswordRequest;
 import indiv.neitdev.nollie_furniture.dto.request.UserUpdateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;

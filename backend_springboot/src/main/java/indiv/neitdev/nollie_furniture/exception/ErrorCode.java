@@ -22,6 +22,7 @@ public enum ErrorCode {
     VERIFICATION_CODE_NOT_CORRECT(1013, "Verification code not correct or expired", HttpStatus.BAD_REQUEST),
     ACCOUNT_NOT_ACTIVE(1014, "Account not active", HttpStatus.BAD_REQUEST),
     VERIFICATION_CODE_FAIL_TO_SEND(1015, "Verification code fail to send", HttpStatus.BAD_REQUEST),
+    FAIL_UPLOAD_TO_S3(1016, "S3 Upload failed", HttpStatus.BAD_REQUEST),
     ;
 
 

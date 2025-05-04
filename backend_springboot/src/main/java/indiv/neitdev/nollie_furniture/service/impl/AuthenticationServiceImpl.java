@@ -6,6 +6,7 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import indiv.neitdev.nollie_furniture.dto.request.AuthenticationRequest;
+import indiv.neitdev.nollie_furniture.dto.request.ChangeForgotPasswordRequest;
 import indiv.neitdev.nollie_furniture.dto.request.IntrospectRequest;
 import indiv.neitdev.nollie_furniture.dto.response.AuthenticationResponse;
 import indiv.neitdev.nollie_furniture.dto.response.IntrospectResponse;
@@ -248,6 +249,36 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
 
+    @Override
+    public String changeForgotPassword(ChangeForgotPasswordRequest request) {
+        VerificationCode verificationCode = verificationCodeRepository.findByCode(request.getForgotPasswordRecoveryCode());
+
+        if (verificationCode == null) {
+            throw new AppException(ErrorCode.VERIFICATION_CODE_NOT_CORRECT);
+        }
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime codeExpiryTime = verificationCode.getExpiresAt();
+
+        if (codeExpiryTime == null || currentTime.isAfter(codeExpiryTime)) {
+            throw new AppException(ErrorCode.VERIFICATION_CODE_NOT_CORRECT);
+        }
+
+        User user = verificationCode.getUser();
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+
+        // Xác thực thành công → kích hoạt tài khoản và vô hiệu hóa mã
+        verificationCode.setCode(null);
+        verificationCode.setExpiresAt(null);
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        userRepository.save(user);
+        verificationCodeRepository.save(verificationCode); // lưu lại trạng thái mới
+
+        return "success change forgot password";
+    }
 //    private String buildScope(User user) {
 //        StringJoiner scopeJoiner = new StringJoiner(" ");
 //

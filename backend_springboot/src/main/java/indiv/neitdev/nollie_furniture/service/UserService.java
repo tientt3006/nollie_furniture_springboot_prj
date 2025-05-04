@@ -1,12 +1,12 @@
 package indiv.neitdev.nollie_furniture.service;
 
+import indiv.neitdev.nollie_furniture.dto.request.ChangeForgotPasswordRequest;
 import indiv.neitdev.nollie_furniture.dto.request.ChangePasswordRequest;
 import indiv.neitdev.nollie_furniture.dto.request.UserCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.request.UserUpdateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.UserResponse;
-import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public interface UserService {
@@ -23,4 +23,5 @@ public interface UserService {
     void deleteUser(Integer userId);
 
     UserResponse changePassword(ChangePasswordRequest request);
+
 }

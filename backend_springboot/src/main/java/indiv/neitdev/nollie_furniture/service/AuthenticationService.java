@@ -3,6 +3,7 @@ package indiv.neitdev.nollie_furniture.service;
 
 import com.nimbusds.jose.JOSEException;
 import indiv.neitdev.nollie_furniture.dto.request.AuthenticationRequest;
+import indiv.neitdev.nollie_furniture.dto.request.ChangeForgotPasswordRequest;
 import indiv.neitdev.nollie_furniture.dto.request.IntrospectRequest;
 import indiv.neitdev.nollie_furniture.dto.response.AuthenticationResponse;
 import indiv.neitdev.nollie_furniture.dto.response.IntrospectResponse;
@@ -24,4 +25,6 @@ public interface AuthenticationService {
     String verifyRegistrationCode(String code);
 
     String reSendVerificationCode(String email);
+
+    String changeForgotPassword(ChangeForgotPasswordRequest request);
 }
