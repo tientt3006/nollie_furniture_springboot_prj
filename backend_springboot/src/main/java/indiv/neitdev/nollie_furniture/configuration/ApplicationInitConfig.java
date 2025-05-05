@@ -9,11 +9,16 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Filter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,6 +33,27 @@ public class ApplicationInitConfig {
 
     @NonFinal
     static final String ADMIN_PASSWORD = "admin";
+
+    @NonFinal
+    @Value("${S3_ACCESS_KEY}")
+    String awsS3AccessKey;
+
+    @NonFinal
+    @Value("${S3_SECRET_KEY}")
+    String awsS3SecretKey;
+
+    @NonFinal
+    Region region = Region.AP_SOUTHEAST_2;
+
+    @Bean
+    S3Client createS3Client() {
+        return S3Client.builder()
+                .credentialsProvider(
+                        StaticCredentialsProvider.create(AwsBasicCredentials.create(awsS3AccessKey, awsS3SecretKey))
+                )
+                .region(region)
+                .build();
+    }
 
     @Bean
     @ConditionalOnProperty(

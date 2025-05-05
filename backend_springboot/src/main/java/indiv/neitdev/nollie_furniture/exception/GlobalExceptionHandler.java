@@ -12,6 +12,8 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.nio.file.AccessDeniedException;
 import java.util.Map;
@@ -25,12 +27,49 @@ public class GlobalExceptionHandler {
 
     // Handle uncategorized exception
     @ExceptionHandler(value = Exception.class)
+    ResponseEntity<ApiResponse> handleException(Exception exception) {
+        log.error(exception.getMessage(), exception);
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
+        apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
+        return ResponseEntity.internalServerError().body(apiResponse);
+    }
+    
+    // Handle RuntimeException
+    @ExceptionHandler(value = RuntimeException.class)
     ResponseEntity<ApiResponse> handleRuntimeException(RuntimeException exception) {
         log.error(exception.getMessage(), exception);
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
         apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
         return ResponseEntity.internalServerError().body(apiResponse);
+    }
+
+    // Handle MissingServletRequestPartException (for multipart form data issues)
+    @ExceptionHandler(value = MissingServletRequestPartException.class)
+    ResponseEntity<ApiResponse> handleMissingServletRequestPartException(MissingServletRequestPartException exception) {
+        log.error("Missing required request part: {}", exception.getMessage());
+        ApiResponse apiResponse = new ApiResponse();
+        // If the missing part is "image", use CATEGORY_IMAGE_REQUIRED error code
+        if ("image".equals(exception.getRequestPartName())) {
+            apiResponse.setCode(ErrorCode.CATEGORY_IMAGE_REQUIRED.getCode());
+            apiResponse.setMessage(ErrorCode.CATEGORY_IMAGE_REQUIRED.getMessage());
+            return ResponseEntity.status(ErrorCode.CATEGORY_IMAGE_REQUIRED.getHttpStatusCode()).body(apiResponse);
+        } else {
+            apiResponse.setCode(ErrorCode.INVALID_KEY.getCode());
+            apiResponse.setMessage("Required part '" + exception.getRequestPartName() + "' is missing");
+            return ResponseEntity.badRequest().body(apiResponse);
+        }
+    }
+    
+    // Handle MultipartException (general multipart issues)
+    @ExceptionHandler(value = MultipartException.class)
+    ResponseEntity<ApiResponse> handleMultipartException(MultipartException exception) {
+        log.error("Multipart error: {}", exception.getMessage());
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setCode(ErrorCode.INVALID_KEY.getCode());
+        apiResponse.setMessage("Error processing the uploaded file: " + exception.getMessage());
+        return ResponseEntity.badRequest().body(apiResponse);
     }
 
     // Handle categorized exception, normalize response
@@ -101,8 +140,6 @@ public class GlobalExceptionHandler {
 
     // Method for custom validation error message: change placeholder to specific value
     private String mapAttribute(String message, Map<String, Object> attributes) {
-//        String minValue = attributes.get(MIN_ATTRIBUTE).toString();
-//        return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
         for (Map.Entry<String, Object> entry : attributes.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue().toString();

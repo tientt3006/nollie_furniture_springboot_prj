@@ -8,7 +8,7 @@ CREATE TABLE invalidated_token (
 -- 1. Bảng độc lập
 CREATE TABLE categories (
   id       INT IDENTITY NOT NULL, 
-  name     NVARCHAR(255) NOT NULL, 
+  name     NVARCHAR(255) NOT NULL UNIQUE, 
   img_url  NVARCHAR(500), 
   PRIMARY KEY (id)
 );

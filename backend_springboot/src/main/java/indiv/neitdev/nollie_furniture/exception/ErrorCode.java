@@ -23,8 +23,16 @@ public enum ErrorCode {
     ACCOUNT_NOT_ACTIVE(1014, "Account not active", HttpStatus.BAD_REQUEST),
     VERIFICATION_CODE_FAIL_TO_SEND(1015, "Verification code fail to send", HttpStatus.BAD_REQUEST),
     FAIL_UPLOAD_TO_S3(1016, "S3 Upload failed", HttpStatus.BAD_REQUEST),
+    
+    // Category related errors
+    CATEGORY_NAME_REQUIRED(2001, "Category name is required", HttpStatus.BAD_REQUEST),
+    CATEGORY_IMAGE_REQUIRED(2002, "Category image is required", HttpStatus.BAD_REQUEST),
+    CATEGORY_CREATE_FAILED(2003, "Failed to create category, category name is unique,...", HttpStatus.INTERNAL_SERVER_ERROR),
+    CATEGORY_FETCH_FAILED(2004, "Failed to fetch categories", HttpStatus.INTERNAL_SERVER_ERROR),
+    CATEGORY_NOT_FOUND(2005, "Category not found", HttpStatus.NOT_FOUND),
+    CATEGORY_UPDATE_FAILED(2006, "Failed to update category, category name is unique,...", HttpStatus.INTERNAL_SERVER_ERROR),
+    CATEGORY_DELETE_FAILED(2007, "Failed to delete category", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
-
 
     private int code;
     private String message;

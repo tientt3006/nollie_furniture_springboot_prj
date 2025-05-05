@@ -1,12 +1,5 @@
 package indiv.neitdev.nollie_furniture.service;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import indiv.neitdev.nollie_furniture.exception.AppException;
 import indiv.neitdev.nollie_furniture.exception.ErrorCode;
 import lombok.AccessLevel;
@@ -17,8 +10,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.InputStream;
+import java.io.IOException;
+import java.net.URI;
 
 @Service
 @RequiredArgsConstructor
@@ -27,44 +27,50 @@ import java.io.InputStream;
 public class AwsS3Service {
 
     @NonFinal
-    @Value("${S3_ACCESS_KEY}")
-//    @Value("${spring.data.couchbase.bucket-name}")
+    @Value("${BUCKET_NAME}")
     String bucketName;
 
-    @NonFinal
-    @Value("${S3_ACCESS_KEY}")
-//    @Value("${aws.s3.access.key}")
-    String awsS3AccessKey;
+    S3Client s3Client;
 
-    @NonFinal
-    @Value("${S3_SECRET_KEY}")
-//    @Value("${aws.s3.secret.key}")
-    String awsS3SecretKey;
+    Region region = Region.AP_SOUTHEAST_2;
+
 
     public String saveImageToS3(MultipartFile photo) {
-        String s3LocationImage = null;
-
         try {
+            String filename = photo.getOriginalFilename();
+            if (filename == null || filename.isEmpty()) {
+                throw new IllegalArgumentException("Filename is empty");
+            }
 
-            String s3Filename = photo.getOriginalFilename();
-
-            BasicAWSCredentials awsCredentials = new BasicAWSCredentials(awsS3AccessKey, awsS3SecretKey);
-            AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                    .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-                    .withRegion(Regions.AP_SOUTHEAST_2)
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filename)
+                    .contentType(photo.getContentType())
                     .build();
 
-            InputStream inputStream = photo.getInputStream();
+            s3Client.putObject(request, RequestBody.fromInputStream(photo.getInputStream(), photo.getSize()));
 
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("image/jpeg");
+            return "https://" + bucketName + ".s3." + region.id() + ".amazonaws.com/" + filename;
 
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, s3Filename, inputStream, metadata);
-            s3Client.putObject(putObjectRequest);
-            return "https://" + bucketName + ".s3.amazonaws.com/" + s3Filename;
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.FAIL_UPLOAD_TO_S3);
+        }
+    }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+    public void deleteImageFromS3(String filename) {
+        try {
+
+            DeleteObjectRequest request = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filename)
+                    .build();
+
+            s3Client.deleteObject(request);
+            log.info("Deleted file {} from bucket {}", filename, bucketName);
+
+        } catch (S3Exception e) {
+            log.error("Error deleting file from S3: {}", e.awsErrorDetails().errorMessage());
             throw new AppException(ErrorCode.FAIL_UPLOAD_TO_S3);
         }
     }
