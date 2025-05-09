@@ -32,6 +32,15 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(2005, "Category not found", HttpStatus.NOT_FOUND),
     CATEGORY_UPDATE_FAILED(2006, "Failed to update category, category name is unique,...", HttpStatus.INTERNAL_SERVER_ERROR),
     CATEGORY_DELETE_FAILED(2007, "Failed to delete category", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // Option related errors
+    OPTION_NAME_BLANK(3001, "Option name is blank", HttpStatus.BAD_REQUEST),
+    OPTION_VALUE_BLANK(3002, "Option value is blank", HttpStatus.BAD_REQUEST),
+    OPTION_VALUE_IMG_BLANK(3003, "Option value image is blank", HttpStatus.BAD_REQUEST),
+    OPTION_VALUES_EMPTY(3004, "Option values is empty", HttpStatus.BAD_REQUEST),
+    OPTION_NAME_EXISTS(3005, "Option with this name already exists", HttpStatus.CONFLICT),
+    OPTION_VALUE_EXISTS(3006, "This value already exists for this option", HttpStatus.CONFLICT),
+
     ;
 
     private int code;

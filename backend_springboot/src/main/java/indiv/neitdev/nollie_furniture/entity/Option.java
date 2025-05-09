@@ -10,7 +10,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "options") // Vì Option là từ khóa SQL, nên cần s
+@Table(name = "options", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_option_name", columnNames = {"name"})
+}) // Option is an SQL keyword, so using "options" as table name
 public class Option {
 
     @Id

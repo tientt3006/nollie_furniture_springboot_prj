@@ -10,7 +10,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "options_value")
+@Table(name = "options_value", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_option_value", columnNames = {"option_id", "value"})
+})
 public class OptionValue {
 
     @Id

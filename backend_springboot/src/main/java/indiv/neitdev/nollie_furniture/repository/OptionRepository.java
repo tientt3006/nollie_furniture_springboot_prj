@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OptionRepository extends JpaRepository<Option, Integer> {
+    // Method to check if option with same name exists
+    boolean existsByNameIgnoreCase(String name);
 }
