@@ -1,7 +1,7 @@
 package indiv.neitdev.nollie_furniture.controller;
 
 import indiv.neitdev.nollie_furniture.dto.request.OptionCreateRequest;
-import indiv.neitdev.nollie_furniture.dto.request.OptionValueDto;
+import indiv.neitdev.nollie_furniture.dto.request.OptionValueCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OptionResponse;
 import indiv.neitdev.nollie_furniture.service.OptionService;
@@ -42,17 +42,14 @@ public class OptionController {
             @RequestParam("values") List<String> values,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
 
-        // Create request object from form data
-        List<OptionValueDto> optionValues = new ArrayList<>();
+        List<OptionValueCreateRequest> optionValues = new ArrayList<>();
         for (int i = 0; i < values.size(); i++) {
-            OptionValueDto valueDto = new OptionValueDto();
+            OptionValueCreateRequest valueDto = new OptionValueCreateRequest();
             valueDto.setValue(values.get(i));
-            
-            // Assign image if available
+
             if (images != null && i < images.size()) {
                 valueDto.setImg(images.get(i));
             }
-            
             optionValues.add(valueDto);
         }
         
@@ -63,5 +60,11 @@ public class OptionController {
 
         var result = optionService.createOption(request);
         return ApiResponse.<OptionResponse>builder().result(result).build();
+    }
+
+    @GetMapping("/all")
+    public ApiResponse<List<OptionResponse>> getAllOptions() {
+        var result = optionService.getAllOptions();
+        return ApiResponse.<List<OptionResponse>>builder().result(result).build();
     }
 }

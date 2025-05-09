@@ -1,8 +1,9 @@
 package indiv.neitdev.nollie_furniture.service.impl;
 
 import indiv.neitdev.nollie_furniture.dto.request.OptionCreateRequest;
-import indiv.neitdev.nollie_furniture.dto.request.OptionValueDto;
+import indiv.neitdev.nollie_furniture.dto.request.OptionValueCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.OptionResponse;
+import indiv.neitdev.nollie_furniture.dto.response.OptionValueResponse;
 import indiv.neitdev.nollie_furniture.entity.Option;
 import indiv.neitdev.nollie_furniture.entity.OptionValue;
 import indiv.neitdev.nollie_furniture.exception.AppException;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,8 +59,8 @@ public class OptionServiceImpl implements OptionService {
             Set<String> valueSet = new HashSet<>();
             
             // Create option values
-            List<OptionValue> optionValues = new ArrayList<>();
-            for (OptionValueDto valueDto : request.getValues()) {
+            List<OptionValueResponse> optionValuesResponse = new ArrayList<>();
+            for (OptionValueCreateRequest valueDto : request.getValues()) {
                 if (valueDto.getValue() == null || valueDto.getValue().trim().isEmpty()) {
                     throw new AppException(ErrorCode.OPTION_VALUE_BLANK);
                 }
@@ -67,7 +69,7 @@ public class OptionServiceImpl implements OptionService {
                 
                 // Check for duplicate values within the request only
                 if (!valueSet.add(normalizedValue)) {
-                    throw new AppException(ErrorCode.OPTION_VALUE_EXISTS);
+                    throw new AppException(ErrorCode.OPTION_VALUE_DUPLICATE);
                 }
 
                 String imgUrl = null;
@@ -80,14 +82,21 @@ public class OptionServiceImpl implements OptionService {
                         .value(valueDto.getValue().trim())
                         .imgUrl(imgUrl)
                         .build();
-                optionValues.add(optionValueRepository.save(optionValue));
+                optionValue = optionValueRepository.save(optionValue);
+
+                OptionValueResponse optionValueResponse = OptionValueResponse.builder()
+                        .id(optionValue.getId())
+                        .name(optionValue.getValue())
+                        .imgUrl(imgUrl)
+                        .build();
+                optionValuesResponse.add(optionValueResponse);
             }
 
             // Return response
             return OptionResponse.builder()
                     .id(option.getId())
                     .name(option.getName())
-                    .values(optionValues)
+                    .values(optionValuesResponse)
                     .build();
         } catch (DataIntegrityViolationException e) {
             // Handle constraint violations from database
@@ -101,6 +110,39 @@ public class OptionServiceImpl implements OptionService {
             } else {
                 throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
             }
+        }
+    }
+
+    @Override
+    public List<OptionResponse> getAllOptions() {
+        try {
+            // Fetch all options from the database
+            List<Option> options = optionRepository.findAll();
+            
+            // Convert to DTO response
+            return options.stream().map(option -> {
+                // Get option values for this option
+                List<OptionValue> optionValues = optionValueRepository.findByOption(option);
+                
+                // Map option values to response DTOs
+                List<OptionValueResponse> optionValueResponses = optionValues.stream()
+                    .map(value -> OptionValueResponse.builder()
+                        .id(value.getId())
+                        .name(value.getValue())
+                        .imgUrl(value.getImgUrl())
+                        .build())
+                    .collect(Collectors.toList());
+                
+                // Build and return option response with its values
+                return OptionResponse.builder()
+                    .id(option.getId())
+                    .name(option.getName())
+                    .values(optionValueResponses)
+                    .build();
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching all options: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
 }

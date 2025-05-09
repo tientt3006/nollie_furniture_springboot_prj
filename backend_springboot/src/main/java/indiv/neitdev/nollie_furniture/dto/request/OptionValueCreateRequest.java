@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OptionValueDto {
+public class OptionValueCreateRequest {
 
     @NotBlank(message = "OPTION_VALUE_BLANK")
     String value;

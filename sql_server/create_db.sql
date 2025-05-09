@@ -18,6 +18,9 @@ CREATE TABLE options (
   name NVARCHAR(255) NOT NULL, 
   PRIMARY KEY (id)
 );
+ALTER TABLE options
+ADD CONSTRAINT UQ_options_name UNIQUE (name);
+
 
 CREATE TABLE users (
   id       INT IDENTITY NOT NULL, 

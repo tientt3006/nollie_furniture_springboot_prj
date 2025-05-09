@@ -4,8 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -20,5 +18,5 @@ public class OptionCreateRequest {
     String name;
 
     @NotNull(message = "OPTION_VALUES_EMPTY")
-    List<OptionValueDto> values;
+    List<OptionValueCreateRequest> values;
 }
