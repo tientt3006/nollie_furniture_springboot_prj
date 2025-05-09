@@ -2,6 +2,7 @@ package indiv.neitdev.nollie_furniture.controller;
 
 import indiv.neitdev.nollie_furniture.dto.request.OptionCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.request.OptionValueCreateRequest;
+import indiv.neitdev.nollie_furniture.dto.request.OptionUpdateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OptionResponse;
 import indiv.neitdev.nollie_furniture.service.OptionService;
@@ -62,9 +63,58 @@ public class OptionController {
         return ApiResponse.<OptionResponse>builder().result(result).build();
     }
 
+    @PutMapping("/update")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<OptionResponse> updateOption(
+            @RequestBody @Valid OptionUpdateRequest request) {
+        var result = optionService.updateOption(request);
+        return ApiResponse.<OptionResponse>builder().result(result).build();
+    }
+
+    @PutMapping(value = "/update-with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<OptionResponse> updateOptionWithImages(
+            @RequestPart("id") int id,
+            @RequestPart("name") String name,
+            @RequestPart(value = "valueIdsForDelete", required = false) List<Integer> valueIdsForDelete,
+            @RequestPart(value = "newValuesForAdd", required = false) List<String> values,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+
+        // Build newValuesForAdd manually
+        List<OptionValueCreateRequest> newValues = new ArrayList<>();
+        if (values != null) {
+            for (int i = 0; i < values.size(); i++) {
+                OptionValueCreateRequest valueDto = new OptionValueCreateRequest();
+                valueDto.setValue(values.get(i));
+
+                if (images != null && i < images.size() && images.get(i) != null && !images.get(i).isEmpty()) {
+                    valueDto.setImg(images.get(i));
+                }
+
+                newValues.add(valueDto);
+            }
+        }
+
+        OptionUpdateRequest request = new OptionUpdateRequest();
+        request.setId(id);
+        request.setName(name);
+        request.setValueIdsForDelete(valueIdsForDelete);
+        request.setNewValuesForAdd(newValues);
+
+        var result = optionService.updateOption(request);
+        return ApiResponse.<OptionResponse>builder().result(result).build();
+    }
+
+
     @GetMapping("/all")
     public ApiResponse<List<OptionResponse>> getAllOptions() {
         var result = optionService.getAllOptions();
         return ApiResponse.<List<OptionResponse>>builder().result(result).build();
+    }
+    
+    @GetMapping("/{id}")
+    public ApiResponse<OptionResponse> getOptionById(@PathVariable int id) {
+        var result = optionService.getOptionById(id);
+        return ApiResponse.<OptionResponse>builder().result(result).build();
     }
 }
