@@ -42,6 +42,7 @@ public enum ErrorCode {
     OPTION_VALUE_EXISTS(3006, "This value already exists for this option", HttpStatus.CONFLICT),
     OPTION_VALUE_DUPLICATE(3007, "Option value duplicate detected", HttpStatus.CONFLICT),
     OPTION_NOT_FOUND(3008, "Option not found", HttpStatus.NOT_FOUND),
+    OPTION_DELETE_CONSTRAINT(3009, "Cannot delete option because it is being used by other entities", HttpStatus.CONFLICT),
 
     ;
 

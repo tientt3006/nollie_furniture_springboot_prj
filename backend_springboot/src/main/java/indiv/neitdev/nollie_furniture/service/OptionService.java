@@ -11,4 +11,5 @@ public interface OptionService {
     List<OptionResponse> getAllOptions();
     OptionResponse getOptionById(int id);
     OptionResponse updateOption(OptionUpdateRequest request);
+    void deleteOption(int id);
 }

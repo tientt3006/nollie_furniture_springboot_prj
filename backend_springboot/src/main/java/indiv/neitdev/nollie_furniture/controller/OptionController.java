@@ -117,4 +117,11 @@ public class OptionController {
         var result = optionService.getOptionById(id);
         return ApiResponse.<OptionResponse>builder().result(result).build();
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Void> deleteOption(@PathVariable int id) {
+        optionService.deleteOption(id);
+        return ApiResponse.<Void>builder().message("Option deleted successfully").build();
+    }
 }

@@ -296,4 +296,45 @@ public class OptionServiceImpl implements OptionService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
+
+    @Override
+    @Transactional
+    public void deleteOption(int id) {
+        try {
+            // Find option by ID
+            Option option = optionRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.OPTION_NOT_FOUND));
+            
+            // Get option values to delete their images
+            List<OptionValue> optionValues = optionValueRepository.findByOption(option);
+            
+            // Delete images from S3 if they exist
+            for (OptionValue optionValue : optionValues) {
+                if (optionValue.getImgUrl() != null && !optionValue.getImgUrl().isEmpty()) {
+                    String filename = optionValue.getImgUrl().substring(
+                        optionValue.getImgUrl().lastIndexOf('/') + 1);
+                    try {
+                        awsS3Service.deleteImageFromS3(filename);
+                    } catch (Exception e) {
+                        log.error("Failed to delete image from S3: {}", e.getMessage());
+                        // Continue deletion process even if image deletion fails
+                    }
+                }
+                optionValueRepository.delete(optionValue);
+            }
+            
+            // Delete option (cascades to option values)
+            optionRepository.delete(option);
+            
+            log.info("Option with id {} deleted successfully", id);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Data integrity violation when deleting option with id {}: {}", id, e.getMessage());
+            throw new AppException(ErrorCode.OPTION_DELETE_CONSTRAINT);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error deleting option with id {}: {}", id, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
 }
