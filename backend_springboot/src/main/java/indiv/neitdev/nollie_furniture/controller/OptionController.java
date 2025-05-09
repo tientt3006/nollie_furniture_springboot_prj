@@ -71,13 +71,13 @@ public class OptionController {
         return ApiResponse.<OptionResponse>builder().result(result).build();
     }
 
-    @PutMapping(value = "/update-with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/update-with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<OptionResponse> updateOptionWithImages(
-            @RequestPart("id") int id,
-            @RequestPart("name") String name,
-            @RequestPart(value = "valueIdsForDelete", required = false) List<Integer> valueIdsForDelete,
-            @RequestPart(value = "newValuesForAdd", required = false) List<String> values,
+            @RequestParam("id") int id,
+            @RequestParam("name") String name,
+            @RequestParam(value = "valueIdsForDelete", required = false) List<Integer> valueIdsForDelete,
+            @RequestParam(value = "newValuesForAdd", required = false) List<String> values,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
 
         // Build newValuesForAdd manually
