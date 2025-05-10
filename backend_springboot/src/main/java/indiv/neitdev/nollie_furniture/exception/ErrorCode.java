@@ -32,6 +32,8 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(2005, "Category not found", HttpStatus.NOT_FOUND),
     CATEGORY_UPDATE_FAILED(2006, "Failed to update category, category name is unique,...", HttpStatus.INTERNAL_SERVER_ERROR),
     CATEGORY_DELETE_FAILED(2007, "Failed to delete category", HttpStatus.INTERNAL_SERVER_ERROR),
+    CATEGORY_ID_BLANK(2008, "Category ID cannot be blank", HttpStatus.BAD_REQUEST),
+
 
     // Option related errors
     OPTION_NAME_BLANK(3001, "Option name is blank", HttpStatus.BAD_REQUEST),
@@ -43,6 +45,20 @@ public enum ErrorCode {
     OPTION_VALUE_DUPLICATE(3007, "Option value duplicate detected", HttpStatus.CONFLICT),
     OPTION_NOT_FOUND(3008, "Option not found", HttpStatus.NOT_FOUND),
     OPTION_DELETE_CONSTRAINT(3009, "Cannot delete option because it is being used by other entities", HttpStatus.CONFLICT),
+    OPTION_ID_BLANK(3010, "Option ID cannot be blank", HttpStatus.BAD_REQUEST),
+    OPTION_VALUE_ID_BLANK(3011, "Option value ID cannot be blank", HttpStatus.BAD_REQUEST),
+    OPTION_VALUE_NOT_FOUND(3012, "Option value not found", HttpStatus.BAD_REQUEST),
+
+    // Product related errors
+    PRODUCT_NAME_BLANK(4001, "Product name cannot be blank", HttpStatus.BAD_REQUEST),
+    PRODUCT_PRICE_INVALID(4002, "Product price must be greater than zero", HttpStatus.BAD_REQUEST),
+    PRODUCT_QUANTITY_INVALID(4003, "Product quantity cannot be negative", HttpStatus.BAD_REQUEST),
+    PRODUCT_NAME_ALREADY_EXISTS(4004, "Product name already exists", HttpStatus.BAD_REQUEST),
+    DUPLICATE_OPTION_IDS(4005, "Duplicate option IDs are not allowed", HttpStatus.BAD_REQUEST),
+    DUPLICATE_OPTION_VALUE_IDS(4006, "Duplicate option value IDs are not allowed within an option", HttpStatus.BAD_REQUEST),
+    OPTION_VALUE_NOT_BELONG_TO_OPTION(4007, "Option value does not belong to the specified option", HttpStatus.BAD_REQUEST),
+
+
 
     ;
 

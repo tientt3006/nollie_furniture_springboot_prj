@@ -1,11 +1,13 @@
 package indiv.neitdev.nollie_furniture.dto.response;
 
 import indiv.neitdev.nollie_furniture.entity.Category;
+import indiv.neitdev.nollie_furniture.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +16,7 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductResponse {
 
-    Integer id;
+    Integer productId;
 
     Category category;
 
@@ -29,4 +31,10 @@ public class ProductResponse {
     BigDecimal length;
 
     String description;
+
+    String baseImageUrl;
+
+    List<String> otherImagesUrl;
+
+    List<ProductOptionResponse> productOptionResponseList;
 }
