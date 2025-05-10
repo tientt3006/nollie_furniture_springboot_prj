@@ -27,4 +27,8 @@ public class OrderItem {
 
     @Column(name = "quantity", nullable = false)
     Integer quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "product_option_value_id")
+    ProductOptionValue productOptionValue;
 }

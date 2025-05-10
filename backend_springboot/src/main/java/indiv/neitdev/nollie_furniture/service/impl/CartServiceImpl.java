@@ -1,6 +1,5 @@
 package indiv.neitdev.nollie_furniture.service.impl;
 
-import indiv.neitdev.nollie_furniture.repository.CartItemOptionRepository;
 import indiv.neitdev.nollie_furniture.repository.CartItemRepository;
 import indiv.neitdev.nollie_furniture.repository.CartRepository;
 import indiv.neitdev.nollie_furniture.service.CartService;
@@ -17,5 +16,4 @@ import org.springframework.stereotype.Service;
 public class CartServiceImpl implements CartService {
     CartRepository cartRepository;
     CartItemRepository cartItemRepository;
-    CartItemOptionRepository cartItemOptionRepository;
 }

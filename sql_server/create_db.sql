@@ -48,7 +48,7 @@ CREATE TABLE verification_code (
 );
 CREATE TABLE products (
   id          INT IDENTITY NOT NULL, 
-  category_id INT NOT NULL, 
+  category_id INT, 
   name        NVARCHAR(255) NOT NULL, 
   base_price  DECIMAL(18, 2) NOT NULL, 
   height      DECIMAL(18, 2), 
@@ -56,7 +56,7 @@ CREATE TABLE products (
   length      DECIMAL(18, 2), 
   description NVARCHAR(500), 
   PRIMARY KEY (id),
-  FOREIGN KEY (category_id) REFERENCES categories(id)
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
 
 CREATE TABLE options_value (
@@ -113,18 +113,11 @@ CREATE TABLE carts_item (
   quantity   INT NOT NULL, 
   cart_id    INT NOT NULL, 
   product_id INT NOT NULL, 
+  product_option_value_id INT,
   PRIMARY KEY (id),
   FOREIGN KEY (cart_id) REFERENCES carts(id),
-  FOREIGN KEY (product_id) REFERENCES products(id)
-);
-
-CREATE TABLE carts_item_options (
-  id                    INT IDENTITY NOT NULL, 
-  cart_item_id          INT NOT NULL, 
-  product_option_value_id INT NOT NULL, 
-  PRIMARY KEY (id),
-  FOREIGN KEY (cart_item_id) REFERENCES carts_item(id),
-  FOREIGN KEY (product_option_value_id) REFERENCES products_options_value(id)
+  FOREIGN KEY (product_id) REFERENCES products(id),
+  FOREIGN KEY (product_option_value_id) REFERENCES products_options_value(id) ON DELETE SET NULL
 );
 
 -- 5. Bảng đơn hàng và các bảng liên quan
@@ -143,7 +136,7 @@ CREATE TABLE orders (
   address        NVARCHAR(255) NOT NULL, 
   email          NVARCHAR(255) NOT NULL, 
   phone          NVARCHAR(20) NOT NULL, 
-  payment_method NVARCHAR(255) NOT NULL, 
+  payment_method NVARCHAR(255), 
   PRIMARY KEY (id),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -157,16 +150,9 @@ CREATE TABLE orders_item (
   order_id   INT NOT NULL, 
   product_id INT NOT NULL, 
   quantity   INT NOT NULL, 
+  product_option_value_id INT, 
   PRIMARY KEY (id),
   FOREIGN KEY (order_id) REFERENCES orders(id),
-  FOREIGN KEY (product_id) REFERENCES products(id)
-);
-
-CREATE TABLE orders_item_options (
-  id                   INT IDENTITY NOT NULL, 
-  order_item_id        INT NOT NULL, 
-  product_option_value_id INT NOT NULL, 
-  PRIMARY KEY (id),
-  FOREIGN KEY (order_item_id) REFERENCES orders_item(id),
-  FOREIGN KEY (product_option_value_id) REFERENCES products_options_value(id)
+  FOREIGN KEY (product_id) REFERENCES products(id),
+  FOREIGN KEY (product_option_value_id) REFERENCES products_options_value(id) ON DELETE SET NULL
 );

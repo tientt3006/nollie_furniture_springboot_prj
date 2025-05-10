@@ -7,10 +7,11 @@ import indiv.neitdev.nollie_furniture.dto.response.OptionResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OptionValueResponse;
 import indiv.neitdev.nollie_furniture.entity.Option;
 import indiv.neitdev.nollie_furniture.entity.OptionValue;
+import indiv.neitdev.nollie_furniture.entity.ProductOption;
+import indiv.neitdev.nollie_furniture.entity.ProductOptionValue;
 import indiv.neitdev.nollie_furniture.exception.AppException;
 import indiv.neitdev.nollie_furniture.exception.ErrorCode;
-import indiv.neitdev.nollie_furniture.repository.OptionRepository;
-import indiv.neitdev.nollie_furniture.repository.OptionValueRepository;
+import indiv.neitdev.nollie_furniture.repository.*;
 import indiv.neitdev.nollie_furniture.service.AwsS3Service;
 import indiv.neitdev.nollie_furniture.service.OptionService;
 import lombok.AccessLevel;
@@ -36,6 +37,9 @@ public class OptionServiceImpl implements OptionService {
     OptionRepository optionRepository;
     OptionValueRepository optionValueRepository;
     AwsS3Service awsS3Service;
+    private final ProductRepository productRepository;
+    private final ProductOptionRepository productOptionRepository;
+    private final ProductOptionValueRepository productOptionValueRepository;
 
     @Override
     @Transactional
@@ -212,6 +216,9 @@ public class OptionServiceImpl implements OptionService {
                                 optionValue.getImgUrl().lastIndexOf('/') + 1);
                             awsS3Service.deleteImageFromS3(filename);
                         }
+
+                        deleteProductOptionValueByOptionValue(optionValue);
+
                         optionValueRepository.delete(optionValue);
                     });
                 }
@@ -304,26 +311,11 @@ public class OptionServiceImpl implements OptionService {
             // Find option by ID
             Option option = optionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.OPTION_NOT_FOUND));
-            
-            // Get option values to delete their images
-            List<OptionValue> optionValues = optionValueRepository.findByOption(option);
-            
-            // Delete images from S3 if they exist
-            for (OptionValue optionValue : optionValues) {
-                if (optionValue.getImgUrl() != null && !optionValue.getImgUrl().isEmpty()) {
-                    String filename = optionValue.getImgUrl().substring(
-                        optionValue.getImgUrl().lastIndexOf('/') + 1);
-                    try {
-                        awsS3Service.deleteImageFromS3(filename);
-                    } catch (Exception e) {
-                        log.error("Failed to delete image from S3: {}", e.getMessage());
-                        // Continue deletion process even if image deletion fails
-                    }
-                }
-                optionValueRepository.delete(optionValue);
-            }
-            
-            // Delete option (cascades to option values)
+
+            deleteOptionValueByOption(option);
+
+            deleteProductOptionByOption(option);
+
             optionRepository.delete(option);
             
             log.info("Option with id {} deleted successfully", id);
@@ -335,6 +327,73 @@ public class OptionServiceImpl implements OptionService {
         } catch (Exception e) {
             log.error("Error deleting option with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    private void deleteOptionValueByOption(Option option) {
+        // Get option values to delete their images
+        List<OptionValue> optionValues = optionValueRepository.findByOption(option);
+
+        // Delete images from S3 if they exist
+        for (OptionValue optionValue : optionValues) {
+            if (optionValue.getImgUrl() != null && !optionValue.getImgUrl().isEmpty()) {
+                String filename = optionValue.getImgUrl().substring(
+                        optionValue.getImgUrl().lastIndexOf('/') + 1);
+                try {
+                    awsS3Service.deleteImageFromS3(filename);
+                } catch (Exception e) {
+                    log.error("Failed to delete OptionValue image from S3: {}", e.getMessage());
+                    // Continue deletion process even if image deletion fails
+                }
+            }
+
+            deleteProductOptionValueByOptionValue(optionValue);
+
+            optionValueRepository.delete(optionValue);
+        }
+    }
+
+    private void deleteProductOptionByOption(Option option) {
+        // Get option values to delete their images
+        List<ProductOption> productOptions = productOptionRepository.findByOption(option);
+
+        for (ProductOption productOption : productOptions) {
+            deleteProductOptionValueByProductOption(productOption);
+            productOptionRepository.delete(productOption); // on delete set null for CartItem and OrderItem
+        }
+    }
+
+    private void deleteProductOptionValueByProductOption(ProductOption productOption) {
+        List<ProductOptionValue> productOptionValues = productOptionValueRepository.findByProductOption(productOption);
+
+        for(ProductOptionValue productOptionValue : productOptionValues) {
+            if (productOptionValue.getImgUrl() != null && !productOptionValue.getImgUrl().isEmpty()) {
+                String filename = productOptionValue.getImgUrl().substring(productOptionValue.getImgUrl().lastIndexOf('/') + 1);
+                try {
+                    awsS3Service.deleteImageFromS3(filename);
+                } catch (Exception e) {
+                    log.error("Failed to delete ProductOptionValue image from S3: {}", e.getMessage());
+                    // Continue deletion process even if image deletion fails
+                }
+            }
+            productOptionValueRepository.delete(productOptionValue);
+        }
+    }
+
+    private void deleteProductOptionValueByOptionValue(OptionValue optionValue) {
+        List<ProductOptionValue> productOptionValues = productOptionValueRepository.findByOptionValue(optionValue);
+
+        for(ProductOptionValue productOptionValue : productOptionValues) {
+            if (productOptionValue.getImgUrl() != null && !productOptionValue.getImgUrl().isEmpty()) {
+                String filename = productOptionValue.getImgUrl().substring(productOptionValue.getImgUrl().lastIndexOf('/') + 1);
+                try {
+                    awsS3Service.deleteImageFromS3(filename);
+                } catch (Exception e) {
+                    log.error("Failed to delete ProductOptionValue image from S3: {}", e.getMessage());
+                    // Continue deletion process even if image deletion fails
+                }
+            }
+            productOptionValueRepository.delete(productOptionValue); // on delete set null for CartItem and OrderItem
         }
     }
 }

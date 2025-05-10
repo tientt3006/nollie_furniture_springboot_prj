@@ -67,6 +67,6 @@ public class Order {
     @Column(name = "phone", nullable = false)
     String phone;
 
-    @Column(name = "payment_method", nullable = false)
+    @Column(name = "payment_method")
     String paymentMethod;
 }

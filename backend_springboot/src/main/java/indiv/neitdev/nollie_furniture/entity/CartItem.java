@@ -27,4 +27,8 @@ public class CartItem {
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "product_option_value_id")
+    ProductOptionValue productOptionValue;
 }
