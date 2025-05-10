@@ -55,6 +55,7 @@ CREATE TABLE products (
   width       DECIMAL(18, 2), 
   length      DECIMAL(18, 2), 
   description NVARCHAR(500), 
+  base_product_quantity INT NOT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );

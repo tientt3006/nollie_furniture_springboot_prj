@@ -31,6 +31,8 @@ public class ProductResponse {
     BigDecimal length;
 
     String description;
+    
+    Integer baseProductQuantity;
 
     String baseImageUrl;
 

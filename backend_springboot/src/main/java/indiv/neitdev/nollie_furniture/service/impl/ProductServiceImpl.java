@@ -58,6 +58,7 @@ public class ProductServiceImpl implements ProductService {
                     .width(request.getWidth())
                     .length(request.getLength())
                     .description(request.getDescription())
+                    .baseProductQuantity(request.getBaseProductQuantity())
                     .build();
             
             product = productRepository.save(product);
@@ -101,6 +102,7 @@ public class ProductServiceImpl implements ProductService {
                     .width(product.getWidth())
                     .length(product.getLength())
                     .description(product.getDescription())
+                    .baseProductQuantity(product.getBaseProductQuantity())
                     .baseImageUrl(baseImageUrl)
                     .otherImagesUrl(otherImagesUrl)
                     .productOptionResponseList(productOptionResponses)
@@ -130,6 +132,10 @@ public class ProductServiceImpl implements ProductService {
         
         if (request.getCategoryId() == null) {
             throw new AppException(ErrorCode.CATEGORY_ID_BLANK);
+        }
+        
+        if (request.getBaseProductQuantity() == null || request.getBaseProductQuantity() < 0) {
+            throw new AppException(ErrorCode.PRODUCT_QUANTITY_INVALID);
         }
         
         // Options validation
@@ -270,6 +276,7 @@ public class ProductServiceImpl implements ProductService {
                 .optionValueId(optionValue.getId())
                 .optionValueName(optionValue.getValue())
                 .optionValueImgUrl(optionValue.getImgUrl())
+                .productOptionValueId(productOptionValue.getId())
                 .quantity(productOptionValue.getQuantity())
                 .addPrice(productOptionValue.getAddPrice())
                 .productOptionValueImgUrl(productOptionValue.getImgUrl())
@@ -351,6 +358,7 @@ public class ProductServiceImpl implements ProductService {
                         .optionValueId(optionValue.getId())
                         .optionValueName(optionValue.getValue())
                         .optionValueImgUrl(optionValue.getImgUrl())
+                        .productOptionValueId(productOptionValue.getId())
                         .quantity(productOptionValue.getQuantity())
                         .addPrice(productOptionValue.getAddPrice())
                         .productOptionValueImgUrl(productOptionValue.getImgUrl())
@@ -379,6 +387,7 @@ public class ProductServiceImpl implements ProductService {
                 .width(product.getWidth())
                 .length(product.getLength())
                 .description(product.getDescription())
+                .baseProductQuantity(product.getBaseProductQuantity())
                 .baseImageUrl(baseImageUrl)
                 .otherImagesUrl(otherImagesUrl)
                 .productOptionResponseList(productOptionResponses)

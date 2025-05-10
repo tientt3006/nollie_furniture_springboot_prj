@@ -29,6 +29,8 @@ public class ProductCreateRequest {
 
     String description;
 
+    Integer baseProductQuantity;
+
     Integer categoryId;
 
     MultipartFile baseProductImage;
@@ -36,6 +38,4 @@ public class ProductCreateRequest {
     List<MultipartFile> otherProductImages;
 
     List<ProductOptionCreateRequest> productOptionCreateRequestList;
-
-
 }

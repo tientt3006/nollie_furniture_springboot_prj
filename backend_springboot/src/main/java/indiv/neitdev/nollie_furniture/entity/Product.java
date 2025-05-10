@@ -40,4 +40,7 @@ public class Product {
 
     @Column(name = "description")
     String description;
+
+    @Column(name = "base_product_quantity", nullable = false)
+    Integer baseProductQuantity;
 }
