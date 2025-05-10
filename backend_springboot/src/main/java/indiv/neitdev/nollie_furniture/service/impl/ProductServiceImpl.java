@@ -298,6 +298,23 @@ public class ProductServiceImpl implements ProductService {
         }
     }
     
+    @Override
+    public ProductResponse getProductById(Integer id) {
+        try {
+            // Find product by ID
+            Product product = productRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            
+            // Build and return product response
+            return buildProductResponse(product);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error fetching product by id {}: {}", id, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+    
     private ProductResponse buildProductResponse(Product product) {
         // 1. Get product images
         List<ProductImg> productImgs = productImgRepository.findByProduct(product);

@@ -19,4 +19,11 @@ public interface ProductService {
      * @return list of all products
      */
     List<ProductResponse> getAllProducts();
+    
+    /**
+     * Gets a product by its ID
+     * @param id the product ID
+     * @return the product response
+     */
+    ProductResponse getProductById(Integer id);
 }

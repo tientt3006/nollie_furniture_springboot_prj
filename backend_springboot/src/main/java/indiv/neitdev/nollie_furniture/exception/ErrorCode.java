@@ -57,6 +57,7 @@ public enum ErrorCode {
     DUPLICATE_OPTION_IDS(4005, "Duplicate option IDs are not allowed", HttpStatus.BAD_REQUEST),
     DUPLICATE_OPTION_VALUE_IDS(4006, "Duplicate option value IDs are not allowed within an option", HttpStatus.BAD_REQUEST),
     OPTION_VALUE_NOT_BELONG_TO_OPTION(4007, "Option value does not belong to the specified option", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_FOUND(4008, "Product not found", HttpStatus.NOT_FOUND),
 
 
 

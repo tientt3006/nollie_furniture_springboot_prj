@@ -26,7 +26,7 @@ public class SecurityConfig {
     private final String[] PUBLIC_ENDPOINTS = {
             "/", "/user", "/auth/**", "/category",
             "/option/**",
-            "product/all"
+            "product/**"
     };
     private static final String[] ADMIN_ENDPOINTS = {
             "/a"
