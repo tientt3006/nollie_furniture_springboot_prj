@@ -275,4 +275,96 @@ public class ProductServiceImpl implements ProductService {
                 .productOptionValueImgUrl(productOptionValue.getImgUrl())
                 .build();
     }
+
+    @Override
+    public List<ProductResponse> getAllProducts() {
+        try {
+            // 1. Get all products from the repository
+            List<Product> products = productRepository.findAll();
+            
+            // 2. Convert each product to a ProductResponse
+            List<ProductResponse> responses = new ArrayList<>();
+            
+            for (Product product : products) {
+                // 3. Build product response for each product
+                ProductResponse response = buildProductResponse(product);
+                responses.add(response);
+            }
+            
+            return responses;
+        } catch (Exception e) {
+            log.error("Error fetching all products: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+    
+    private ProductResponse buildProductResponse(Product product) {
+        // 1. Get product images
+        List<ProductImg> productImgs = productImgRepository.findByProduct(product);
+        
+        // 2. Find base image and other images
+        String baseImageUrl = null;
+        List<String> otherImagesUrl = new ArrayList<>();
+        
+        for (ProductImg img : productImgs) {
+            // Add image URLs to the appropriate lists
+            if (baseImageUrl == null) {
+                baseImageUrl = img.getImgUrl(); // First image is used as base image
+            } else {
+                otherImagesUrl.add(img.getImgUrl());
+            }
+        }
+        
+        // 3. Get product options
+        List<ProductOption> productOptions = productOptionRepository.findByProduct(product);
+        List<ProductOptionResponse> productOptionResponses = new ArrayList<>();
+        
+        for (ProductOption productOption : productOptions) {
+            Option option = productOption.getOption();
+            
+            // 4. Get product option values for this option
+            List<ProductOptionValue> productOptionValues = productOptionValueRepository.findByProductOption(productOption);
+            List<ProductOptionValueResponse> valueResponses = new ArrayList<>();
+            
+            for (ProductOptionValue productOptionValue : productOptionValues) {
+                OptionValue optionValue = productOptionValue.getOptionValue();
+                
+                // 5. Build product option value response
+                ProductOptionValueResponse valueResponse = ProductOptionValueResponse.builder()
+                        .optionValueId(optionValue.getId())
+                        .optionValueName(optionValue.getValue())
+                        .optionValueImgUrl(optionValue.getImgUrl())
+                        .quantity(productOptionValue.getQuantity())
+                        .addPrice(productOptionValue.getAddPrice())
+                        .productOptionValueImgUrl(productOptionValue.getImgUrl())
+                        .build();
+                
+                valueResponses.add(valueResponse);
+            }
+            
+            // 6. Build product option response with its values
+            ProductOptionResponse optionResponse = ProductOptionResponse.builder()
+                    .optionId(option.getId())
+                    .optionName(option.getName())
+                    .productOptionValueResponseList(valueResponses)
+                    .build();
+            
+            productOptionResponses.add(optionResponse);
+        }
+        
+        // 7. Build and return complete product response
+        return ProductResponse.builder()
+                .productId(product.getId())
+                .category(product.getCategory())
+                .name(product.getName())
+                .basePrice(product.getBasePrice())
+                .height(product.getHeight())
+                .width(product.getWidth())
+                .length(product.getLength())
+                .description(product.getDescription())
+                .baseImageUrl(baseImageUrl)
+                .otherImagesUrl(otherImagesUrl)
+                .productOptionResponseList(productOptionResponses)
+                .build();
+    }
 }

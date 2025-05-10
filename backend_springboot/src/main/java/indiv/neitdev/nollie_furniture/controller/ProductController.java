@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/product")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -28,5 +30,10 @@ public class ProductController {
         var result = productService.createProduct(request);
         return ApiResponse.<ProductResponse>builder().result(result).build();
     }
-
+    
+    @GetMapping("/all")
+    public ApiResponse<List<ProductResponse>> getAllProducts() {
+        var result = productService.getAllProducts();
+        return ApiResponse.<List<ProductResponse>>builder().result(result).build();
+    }
 }

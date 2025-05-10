@@ -24,7 +24,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/", "/user", "/auth/**", "/category"
+            "/", "/user", "/auth/**", "/category",
+            "/option/**",
+            "product/all"
     };
     private static final String[] ADMIN_ENDPOINTS = {
             "/a"
