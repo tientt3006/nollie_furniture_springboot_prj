@@ -733,4 +733,49 @@ public class ProductServiceImpl implements ProductService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
+
+    @Override
+    @Transactional
+    public ProductResponse deleteProductOption(Integer prodOptId) {
+        try {
+            // Find product option by ID
+            ProductOption productOption = productOptionRepository.findById(prodOptId)
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_OPTION_NOT_FOUND));
+            
+            // Get product from product option for the response
+            Product product = productOption.getProduct();
+            
+            // Find all related product option values
+            List<ProductOptionValue> productOptionValues = productOptionValueRepository.findByProductOption(productOption);
+            
+            // Delete all product option values first
+            for (ProductOptionValue productOptionValue : productOptionValues) {
+                // Delete image from S3 if it exists
+                if (productOptionValue.getImgUrl() != null && !productOptionValue.getImgUrl().isEmpty()) {
+                    String filename = productOptionValue.getImgUrl().substring(
+                            productOptionValue.getImgUrl().lastIndexOf('/') + 1);
+                    try {
+                        awsS3Service.deleteImageFromS3(filename);
+                    } catch (Exception e) {
+                        log.error("Failed to delete product option value image from S3: {}", e.getMessage());
+                        // Continue deletion process even if image deletion fails
+                    }
+                }
+                
+                // Delete product option value from database
+                productOptionValueRepository.delete(productOptionValue);
+            }
+            
+            // After deleting all option values, delete the product option itself
+            productOptionRepository.delete(productOption);
+            
+            // Return updated product response
+            return buildProductResponse(product);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error deleting product option with ID {}: {}", prodOptId, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
 }

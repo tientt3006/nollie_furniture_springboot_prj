@@ -68,4 +68,6 @@ public interface ProductService {
      * @return the updated product response
      */
     ProductResponse addProductOption(ProductOptionAddRequest request);
+
+    ProductResponse deleteProductOption(Integer prodOptId);
 }
