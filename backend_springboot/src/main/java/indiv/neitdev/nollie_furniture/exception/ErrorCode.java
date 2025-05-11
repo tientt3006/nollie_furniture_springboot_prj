@@ -48,6 +48,7 @@ public enum ErrorCode {
     OPTION_ID_BLANK(3010, "Option ID cannot be blank", HttpStatus.BAD_REQUEST),
     OPTION_VALUE_ID_BLANK(3011, "Option value ID cannot be blank", HttpStatus.BAD_REQUEST),
     OPTION_VALUE_NOT_FOUND(3012, "Option value not found", HttpStatus.BAD_REQUEST),
+    OPTION_ALREADY_ADDED_TO_PRODUCT(4014, "This option has already been added to this product", HttpStatus.CONFLICT),
 
     // Product related errors
     PRODUCT_NAME_BLANK(4001, "Product name cannot be blank", HttpStatus.BAD_REQUEST),

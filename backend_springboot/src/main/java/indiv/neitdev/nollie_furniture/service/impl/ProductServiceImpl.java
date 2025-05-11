@@ -656,4 +656,81 @@ public class ProductServiceImpl implements ProductService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
+
+    @Override
+    @Transactional
+    public ProductResponse deleteProductOptionValue(Integer prodOptValId) {
+        try {
+            // Find product option value by ID
+            ProductOptionValue productOptionValue = productOptionValueRepository.findById(prodOptValId.longValue())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_OPTION_VALUE_NOT_FOUND));
+            
+            // Get product from product option value
+            ProductOption productOption = productOptionValue.getProductOption();
+            Product product = productOption.getProduct();
+            
+            // Delete image from S3 if it exists
+            if (productOptionValue.getImgUrl() != null && !productOptionValue.getImgUrl().isEmpty()) {
+                String filename = productOptionValue.getImgUrl().substring(
+                        productOptionValue.getImgUrl().lastIndexOf('/') + 1);
+                try {
+                    awsS3Service.deleteImageFromS3(filename);
+                } catch (Exception e) {
+                    log.error("Failed to delete product option value image from S3: {}", e.getMessage());
+                    // Continue deletion process even if image deletion fails
+                }
+            }
+            
+            // Delete product option value from database
+            productOptionValueRepository.delete(productOptionValue);
+            
+            // Return updated product response
+            return buildProductResponse(product);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error deleting product option value with ID {}: {}", prodOptValId, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse addProductOption(ProductOptionAddRequest request) {
+        try {
+            // Find product by ID
+            Product product = productRepository.findById(request.getProductId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            
+            // Find option by ID
+            Option option = optionRepository.findById(request.getOptionId())
+                    .orElseThrow(() -> new AppException(ErrorCode.OPTION_NOT_FOUND));
+            
+            // Check if this option is already added to this product
+            boolean optionExists = productOptionRepository.findByProduct(product)
+                    .stream()
+                    .anyMatch(po -> po.getOption().getId().equals(option.getId()));
+                    
+            if (optionExists) {
+                throw new AppException(ErrorCode.OPTION_ALREADY_ADDED_TO_PRODUCT);
+            }
+            
+            // Create new product option
+            ProductOption productOption = ProductOption.builder()
+                    .product(product)
+                    .option(option)
+                    .build();
+            
+            // Save to database
+            productOptionRepository.save(productOption);
+            
+            // Return updated product
+            return buildProductResponse(product);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error adding product option: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
 }

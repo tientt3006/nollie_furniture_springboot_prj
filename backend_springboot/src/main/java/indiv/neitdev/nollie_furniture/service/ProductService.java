@@ -54,4 +54,18 @@ public interface ProductService {
      * @return the updated product response
      */
     ProductResponse addProductOptionValue(ProdOptValAddReq request);
+    
+    /**
+     * Deletes a product option value
+     * @param prodOptValId the ID of the product option value to delete
+     * @return the updated product response
+     */
+    ProductResponse deleteProductOptionValue(Integer prodOptValId);
+    
+    /**
+     * Adds a new option to an existing product
+     * @param request the product option add request
+     * @return the updated product response
+     */
+    ProductResponse addProductOption(ProductOptionAddRequest request);
 }

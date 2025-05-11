@@ -69,4 +69,18 @@ public class ProductController {
         var result = productService.addProductOptionValue(request);
         return ApiResponse.<ProductResponse>builder().result(result).build();
     }
+
+    @DeleteMapping("/delete-opt-val/{prodOptValId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<ProductResponse> deleteProductOptionValue(@PathVariable Integer prodOptValId) {
+        var result = productService.deleteProductOptionValue(prodOptValId);
+        return ApiResponse.<ProductResponse>builder().result(result).build();
+    }
+
+    @PostMapping("/add-option")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<ProductResponse> addProductOption(@RequestBody @Valid ProductOptionAddRequest request) {
+        var result = productService.addProductOption(request);
+        return ApiResponse.<ProductResponse>builder().result(result).build();
+    }
 }
