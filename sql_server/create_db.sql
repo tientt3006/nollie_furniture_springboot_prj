@@ -113,11 +113,11 @@ CREATE TABLE carts_item (
   id         INT IDENTITY NOT NULL, 
   quantity   INT NOT NULL, 
   cart_id    INT NOT NULL, 
-  product_id INT NOT NULL, 
+  product_id INT, 
   product_option_value_id INT,
   PRIMARY KEY (id),
   FOREIGN KEY (cart_id) REFERENCES carts(id),
-  FOREIGN KEY (product_id) REFERENCES products(id),
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
   FOREIGN KEY (product_option_value_id) REFERENCES products_options_value(id) ON DELETE SET NULL
 );
 
@@ -149,11 +149,11 @@ ADD CONSTRAINT chk_refund CHECK (refund >= 0 AND refund <= 1);
 CREATE TABLE orders_item (
   id         INT IDENTITY NOT NULL, 
   order_id   INT NOT NULL, 
-  product_id INT NOT NULL, 
+  product_id INT, 
   quantity   INT NOT NULL, 
   product_option_value_id INT, 
   PRIMARY KEY (id),
   FOREIGN KEY (order_id) REFERENCES orders(id),
-  FOREIGN KEY (product_id) REFERENCES products(id),
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
   FOREIGN KEY (product_option_value_id) REFERENCES products_options_value(id) ON DELETE SET NULL
 );

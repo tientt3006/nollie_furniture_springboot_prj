@@ -90,4 +90,11 @@ public class ProductController {
         var result = productService.deleteProductOption(prodOptId);
         return ApiResponse.<ProductResponse>builder().result(result).build();
     }
+
+    @DeleteMapping("/delete/{prodId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<String> deleteProduct(@PathVariable Integer prodId) {
+        var result = productService.deleteProduct(prodId);
+        return ApiResponse.<String>builder().result(result).build();
+    }
 }

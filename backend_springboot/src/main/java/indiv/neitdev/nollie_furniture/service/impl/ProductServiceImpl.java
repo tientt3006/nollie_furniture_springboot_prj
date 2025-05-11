@@ -778,4 +778,68 @@ public class ProductServiceImpl implements ProductService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
+
+    @Override
+    @Transactional
+    public String deleteProduct(Integer prodId) {
+        try {
+            // Find product by ID
+            Product product = productRepository.findById(prodId)
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            
+            // 1. Delete all product images
+            List<ProductImg> productImages = productImgRepository.findByProduct(product);
+            for (ProductImg img : productImages) {
+                // Delete image file from S3 bucket
+                if (img.getImgUrl() != null && !img.getImgUrl().isEmpty()) {
+                    String filename = img.getImgUrl().substring(img.getImgUrl().lastIndexOf('/') + 1);
+                    try {
+                        awsS3Service.deleteImageFromS3(filename);
+                    } catch (Exception e) {
+                        log.error("Failed to delete product image from S3: {}", e.getMessage());
+                        // Continue deletion process even if image deletion fails
+                    }
+                }
+            }
+            // Delete all image records from database
+            productImgRepository.deleteAll(productImages);
+            
+            // 2. Get all product options for this product
+            List<ProductOption> productOptions = productOptionRepository.findByProduct(product);
+            
+            for (ProductOption productOption : productOptions) {
+                // 3. For each product option, get and delete all product option values
+                List<ProductOptionValue> productOptionValues = productOptionValueRepository.findByProductOption(productOption);
+                
+                for (ProductOptionValue value : productOptionValues) {
+                    // Delete option value image from S3 if exists
+                    if (value.getImgUrl() != null && !value.getImgUrl().isEmpty()) {
+                        String filename = value.getImgUrl().substring(value.getImgUrl().lastIndexOf('/') + 1);
+                        try {
+                            awsS3Service.deleteImageFromS3(filename);
+                        } catch (Exception e) {
+                            log.error("Failed to delete product option value image from S3: {}", e.getMessage());
+                            // Continue deletion process even if image deletion fails
+                        }
+                    }
+                }
+                
+                // Delete all product option values for this option
+                productOptionValueRepository.deleteAll(productOptionValues);
+            }
+            
+            // 4. Delete all product options
+            productOptionRepository.deleteAll(productOptions);
+            
+            // 5. Finally delete the product itself
+            productRepository.delete(product);
+            
+            return "Product deleted successfully";
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error deleting product with ID {}: {}", prodId, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
 }

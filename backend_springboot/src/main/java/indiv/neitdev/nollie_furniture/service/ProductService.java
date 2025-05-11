@@ -70,4 +70,11 @@ public interface ProductService {
     ProductResponse addProductOption(ProductOptionAddRequest request);
 
     ProductResponse deleteProductOption(Integer prodOptId);
+
+    /**
+     * Deletes a product and all related data (images, options, option values)
+     * @param prodId the ID of the product to delete
+     * @return success message
+     */
+    String deleteProduct(Integer prodId);
 }
