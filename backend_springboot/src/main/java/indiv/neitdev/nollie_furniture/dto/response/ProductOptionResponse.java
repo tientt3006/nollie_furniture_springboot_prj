@@ -13,5 +13,6 @@ import java.util.List;
 public class ProductOptionResponse {
     int optionId;
     String optionName;
+    int productOptionId;
     List<ProductOptionValueResponse> productOptionValueResponseList;
 }

@@ -1,9 +1,6 @@
 package indiv.neitdev.nollie_furniture.service.impl;
 
-import indiv.neitdev.nollie_furniture.dto.request.ProdBaseInfoUpdateReq;
-import indiv.neitdev.nollie_furniture.dto.request.ProductCreateRequest;
-import indiv.neitdev.nollie_furniture.dto.request.ProductOptionCreateRequest;
-import indiv.neitdev.nollie_furniture.dto.request.ProductOptionValueCreateRequest;
+import indiv.neitdev.nollie_furniture.dto.request.*;
 import indiv.neitdev.nollie_furniture.dto.response.ProductOptionResponse;
 import indiv.neitdev.nollie_furniture.dto.response.ProductOptionValueResponse;
 import indiv.neitdev.nollie_furniture.dto.response.ProductResponse;
@@ -235,10 +232,11 @@ public class ProductServiceImpl implements ProductService {
             valueResponses.add(valueResponse);
         }
         
-        // Build and return response
+        // Build and return response - UPDATED to include productOptionId
         return ProductOptionResponse.builder()
                 .optionId(option.getId())
                 .optionName(option.getName())
+                .productOptionId(productOption.getId())  // Add productOptionId
                 .productOptionValueResponseList(valueResponses)
                 .build();
     }
@@ -368,10 +366,11 @@ public class ProductServiceImpl implements ProductService {
                 valueResponses.add(valueResponse);
             }
             
-            // 6. Build product option response with its values
+            // 6. Build product option response with its values - UPDATED to include productOptionId
             ProductOptionResponse optionResponse = ProductOptionResponse.builder()
                     .optionId(option.getId())
                     .optionName(option.getName())
+                    .productOptionId(productOption.getId())  // Add productOptionId
                     .productOptionValueResponseList(valueResponses)
                     .build();
             
@@ -453,6 +452,145 @@ public class ProductServiceImpl implements ProductService {
             throw e;
         } catch (Exception e) {
             log.error("Error updating product base info: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse updateProductImages(ProdImgUpdateReq request) {
+        try {
+            // Find base image by ID
+            ProductImg baseProductImg = productImgRepository.findById(request.getBaseProdImgId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_IMAGE_NOT_FOUND));
+            
+            // Get product from base image
+            Product product = baseProductImg.getProduct();
+            
+            // Update base image if new image is provided
+            if (request.getNewBaseProdImg() != null && !request.getNewBaseProdImg().isEmpty()) {
+                // Delete old image from S3 if it exists
+                if (baseProductImg.getImgUrl() != null && !baseProductImg.getImgUrl().isEmpty()) {
+                    String filename = baseProductImg.getImgUrl().substring(
+                            baseProductImg.getImgUrl().lastIndexOf('/') + 1);
+                    try {
+                        awsS3Service.deleteImageFromS3(filename);
+                    } catch (Exception e) {
+                        log.error("Failed to delete product image from S3: {}", e.getMessage());
+                        // Continue process even if image deletion fails
+                    }
+                }
+                
+                // Upload new image
+                String newImageUrl = awsS3Service.saveImageToS3(request.getNewBaseProdImg());
+                String newImageName = request.getNewBaseProdImg().getOriginalFilename();
+                
+                // Update image details
+                baseProductImg.setImgUrl(newImageUrl);
+                baseProductImg.setImgName(newImageName);
+                
+                // Save updated base image
+                productImgRepository.save(baseProductImg);
+            }
+            
+            // Delete other images if specified
+            if (request.getOtherProdImgIdsForDelete() != null && !request.getOtherProdImgIdsForDelete().isEmpty()) {
+                for (Integer imgId : request.getOtherProdImgIdsForDelete()) {
+                    productImgRepository.findById(imgId).ifPresent(img -> {
+                        // Verify this image belongs to the same product
+                        if (!img.getProduct().getId().equals(product.getId())) {
+                            throw new AppException(ErrorCode.PRODUCT_IMAGE_NOT_BELONG_TO_PRODUCT);
+                        }
+                        
+                        // Delete image from S3
+                        if (img.getImgUrl() != null && !img.getImgUrl().isEmpty()) {
+                            String filename = img.getImgUrl().substring(
+                                    img.getImgUrl().lastIndexOf('/') + 1);
+                            try {
+                                awsS3Service.deleteImageFromS3(filename);
+                            } catch (Exception e) {
+                                log.error("Failed to delete product image from S3: {}", e.getMessage());
+                                // Continue deletion process even if image deletion fails
+                            }
+                        }
+                        
+                        // Delete image record from database
+                        productImgRepository.delete(img);
+                    });
+                }
+            }
+            
+            // Add new other images if specified
+            if (request.getNewOtherProdImgList() != null && !request.getNewOtherProdImgList().isEmpty()) {
+                for (MultipartFile image : request.getNewOtherProdImgList()) {
+                    if (!image.isEmpty()) {
+                        saveProductImage(product, image, false);
+                    }
+                }
+            }
+            
+            // Return updated product response
+            return buildProductResponse(product);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error updating product images: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse updateProductOptionValue(ProdOptValUpdReq request) {
+        try {
+            // Find product option value by ID
+            ProductOptionValue productOptionValue = productOptionValueRepository.findById((long) request.getProdOptValId())
+                    .orElseThrow(() -> new AppException(ErrorCode.OPTION_VALUE_NOT_FOUND));
+            
+            // Get product from product option value
+            ProductOption productOption = productOptionValue.getProductOption();
+            Product product = productOption.getProduct();
+            
+            // Update quantity if provided
+            if (request.getQuantity() > 0) {
+                productOptionValue.setQuantity(request.getQuantity());
+            }
+            
+            // Update addPrice if provided
+            if (request.getAddPrice() != null) {
+                productOptionValue.setAddPrice(request.getAddPrice());
+            }
+            
+            // Update image if new image is provided
+            if (request.getNewProdOptValImg() != null && !request.getNewProdOptValImg().isEmpty()) {
+                // Delete old image from S3 if exists
+                if (productOptionValue.getImgUrl() != null && !productOptionValue.getImgUrl().isEmpty()) {
+                    String filename = productOptionValue.getImgUrl().substring(
+                            productOptionValue.getImgUrl().lastIndexOf('/') + 1);
+                    try {
+                        awsS3Service.deleteImageFromS3(filename);
+                    } catch (Exception e) {
+                        log.error("Failed to delete product option value image from S3: {}", e.getMessage());
+                        // Continue process even if image deletion fails
+                    }
+                }
+                
+                // Upload new image
+                String newImageUrl = awsS3Service.saveImageToS3(request.getNewProdOptValImg());
+                
+                // Update image URL
+                productOptionValue.setImgUrl(newImageUrl);
+            }
+            
+            // Save the updated product option value
+            productOptionValueRepository.save(productOptionValue);
+            
+            // Return updated product response
+            return buildProductResponse(product);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error updating product option value: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }

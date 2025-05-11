@@ -1,8 +1,6 @@
 package indiv.neitdev.nollie_furniture.controller;
 
-import indiv.neitdev.nollie_furniture.dto.request.OptionCreateRequest;
-import indiv.neitdev.nollie_furniture.dto.request.ProductCreateRequest;
-import indiv.neitdev.nollie_furniture.dto.request.ProdBaseInfoUpdateReq;
+import indiv.neitdev.nollie_furniture.dto.request.*;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OptionResponse;
 import indiv.neitdev.nollie_furniture.dto.response.ProductResponse;
@@ -48,6 +46,20 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductResponse> updateProductBaseInfo(@RequestBody @Valid ProdBaseInfoUpdateReq request) {
         var result = productService.updateProductBaseInfo(request);
+        return ApiResponse.<ProductResponse>builder().result(result).build();
+    }
+
+    @PostMapping("/update-img")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<ProductResponse> updateProductImages(@ModelAttribute @Valid ProdImgUpdateReq request) {
+        var result = productService.updateProductImages(request);
+        return ApiResponse.<ProductResponse>builder().result(result).build();
+    }
+
+    @PostMapping("/update-opt-val")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<ProductResponse> updateProductOptionValue(@ModelAttribute @Valid ProdOptValUpdReq request) {
+        var result = productService.updateProductOptionValue(request);
         return ApiResponse.<ProductResponse>builder().result(result).build();
     }
 }
