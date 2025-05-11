@@ -6,6 +6,7 @@ import indiv.neitdev.nollie_furniture.dto.response.CustomProductResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OptionResponse;
 import indiv.neitdev.nollie_furniture.dto.response.ProductResponse;
 import indiv.neitdev.nollie_furniture.entity.Product;
+import indiv.neitdev.nollie_furniture.service.OrderService;
 import indiv.neitdev.nollie_furniture.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.internal.multipart.MpuRequestContext;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/product")
@@ -28,6 +30,7 @@ import java.util.List;
 @Slf4j
 public class ProductController {
     ProductService productService;
+    OrderService orderService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
@@ -139,5 +142,18 @@ public class ProductController {
                 .build();
     }
 
-
+    @GetMapping("/top-sell/{number}")
+    public ApiResponse<List<ProductResponse>> getTopSellingProducts(@PathVariable int number) {
+        // Get top selling products from service
+        List<Product> topSellingProducts = orderService.getTopSellingProducts(number);
+        
+        // Convert products to ProductResponse objects
+        List<ProductResponse> productResponses = topSellingProducts.stream()
+                .map(productService::toProductResponse)
+                .collect(Collectors.toList());
+                
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productResponses)
+                .build();
+    }
 }
