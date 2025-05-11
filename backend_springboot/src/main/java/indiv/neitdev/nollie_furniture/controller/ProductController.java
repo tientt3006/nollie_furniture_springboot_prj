@@ -2,16 +2,22 @@ package indiv.neitdev.nollie_furniture.controller;
 
 import indiv.neitdev.nollie_furniture.dto.request.*;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;
+import indiv.neitdev.nollie_furniture.dto.response.CustomProductResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OptionResponse;
 import indiv.neitdev.nollie_furniture.dto.response.ProductResponse;
+import indiv.neitdev.nollie_furniture.entity.Product;
 import indiv.neitdev.nollie_furniture.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import software.amazon.awssdk.services.s3.internal.multipart.MpuRequestContext;
 
 import java.util.List;
 
@@ -97,4 +103,41 @@ public class ProductController {
         var result = productService.deleteProduct(prodId);
         return ApiResponse.<String>builder().result(result).build();
     }
+
+    @GetMapping("/")
+    public ApiResponse<CustomProductResponse> getProducts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder
+    ) {
+        // Spring pageable bắt đầu từ 0
+        PageRequest pageRequest = PageRequest.of(
+                page - 1,
+                size,
+                Sort.by(sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy)
+        );
+
+        Page<Product> productPage = productService.getProducts(pageRequest, category, search);
+
+        List<ProductResponse> productResponses = productPage.getContent().stream()
+                .map(productService::toProductResponse) // Cần tạo code chuyển Product -> ProductResponse
+                .toList();
+
+        CustomProductResponse response = CustomProductResponse.builder()
+                .currentPage(page)
+                .pageSize(size)
+                .totalItems(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .products(productResponses)
+                .build();
+
+        return ApiResponse.<CustomProductResponse>builder()
+                .result(response)
+                .build();
+    }
+
+
 }

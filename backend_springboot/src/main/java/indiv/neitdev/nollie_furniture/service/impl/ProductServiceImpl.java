@@ -14,6 +14,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -839,6 +841,110 @@ public class ProductServiceImpl implements ProductService {
             throw e;
         } catch (Exception e) {
             log.error("Error deleting product with ID {}: {}", prodId, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    public Page<Product> getProducts(Pageable pageable, String category, String search) {
+        try {
+            // If both category and search are provided
+            if (category != null && !category.isEmpty() && search != null && !search.isEmpty()) {
+                return productRepository.findByCategoryAndSearch(category, search, pageable);
+            }
+            // If only category is provided
+            else if (category != null && !category.isEmpty()) {
+                return productRepository.findByCategory(category, pageable);
+            }
+            // If only search is provided
+            else if (search != null && !search.isEmpty()) {
+                return productRepository.findByCategoryAndSearch(null, search, pageable);
+            }
+            // If no filters are provided
+            else {
+                return productRepository.findAll(pageable);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching products with pagination: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    public ProductResponse toProductResponse(Product product) {
+        try {
+            // 1. Get product images
+            List<ProductImg> productImgs = productImgRepository.findByProduct(product);
+            
+            // 2. Find base image and other images
+            Map<Integer, String> baseImageUrl = null;
+            List<Map<Integer, String>> otherImagesUrl = new ArrayList<>();
+            
+            for (ProductImg img : productImgs) {
+                // Add image URLs to the appropriate lists
+                if (baseImageUrl == null) {
+                    baseImageUrl = Map.of(img.getId(), img.getImgUrl()); // First image is used as base image
+                } else {
+                    otherImagesUrl.add(Map.of(img.getId(), img.getImgUrl()));
+                }
+            }
+            
+            // 3. Get product options
+            List<ProductOption> productOptions = productOptionRepository.findByProduct(product);
+            List<ProductOptionResponse> productOptionResponses = new ArrayList<>();
+            
+            for (ProductOption productOption : productOptions) {
+                Option option = productOption.getOption();
+                
+                // 4. Get product option values for this option
+                List<ProductOptionValue> productOptionValues = productOptionValueRepository.findByProductOption(productOption);
+                List<ProductOptionValueResponse> valueResponses = new ArrayList<>();
+                
+                for (ProductOptionValue productOptionValue : productOptionValues) {
+                    OptionValue optionValue = productOptionValue.getOptionValue();
+                    
+                    // 5. Build product option value response
+                    ProductOptionValueResponse valueResponse = ProductOptionValueResponse.builder()
+                            .optionValueId(optionValue.getId())
+                            .optionValueName(optionValue.getValue())
+                            .optionValueImgUrl(optionValue.getImgUrl())
+                            .productOptionValueId(productOptionValue.getId())
+                            .quantity(productOptionValue.getQuantity())
+                            .addPrice(productOptionValue.getAddPrice())
+                            .productOptionValueImgUrl(productOptionValue.getImgUrl())
+                            .build();
+                    
+                    valueResponses.add(valueResponse);
+                }
+                
+                // 6. Build product option response with its values
+                ProductOptionResponse optionResponse = ProductOptionResponse.builder()
+                        .optionId(option.getId())
+                        .optionName(option.getName())
+                        .productOptionId(productOption.getId())
+                        .productOptionValueResponseList(valueResponses)
+                        .build();
+                
+                productOptionResponses.add(optionResponse);
+            }
+            
+            // 7. Build and return complete product response
+            return ProductResponse.builder()
+                    .productId(product.getId())
+                    .category(product.getCategory())
+                    .name(product.getName())
+                    .basePrice(product.getBasePrice())
+                    .height(product.getHeight())
+                    .width(product.getWidth())
+                    .length(product.getLength())
+                    .description(product.getDescription())
+                    .baseProductQuantity(product.getBaseProductQuantity())
+                    .baseImageUrl(baseImageUrl)
+                    .otherImageUrl(otherImagesUrl)
+                    .productOptionResponseList(productOptionResponses)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error converting Product to ProductResponse: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }

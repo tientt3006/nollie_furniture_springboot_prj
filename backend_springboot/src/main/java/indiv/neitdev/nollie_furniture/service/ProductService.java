@@ -3,6 +3,8 @@ package indiv.neitdev.nollie_furniture.service;
 import indiv.neitdev.nollie_furniture.dto.request.*;
 import indiv.neitdev.nollie_furniture.dto.response.ProductResponse;
 import indiv.neitdev.nollie_furniture.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -77,4 +79,20 @@ public interface ProductService {
      * @return success message
      */
     String deleteProduct(Integer prodId);
+
+    /**
+     * Gets a paginated list of products with optional filtering and searching
+     * @param pageable the pagination information
+     * @param category optional category name to filter by
+     * @param search optional search term (product ID or name)
+     * @return page of products matching the criteria
+     */
+    Page<Product> getProducts(Pageable pageable, String category, String search);
+    
+    /**
+     * Converts a Product entity to a ProductResponse DTO
+     * @param product the product entity
+     * @return the product response DTO
+     */
+    ProductResponse toProductResponse(Product product);
 }
