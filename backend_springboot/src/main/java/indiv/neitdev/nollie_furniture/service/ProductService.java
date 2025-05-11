@@ -1,9 +1,6 @@
 package indiv.neitdev.nollie_furniture.service;
 
-import indiv.neitdev.nollie_furniture.dto.request.ProdBaseInfoUpdateReq;
-import indiv.neitdev.nollie_furniture.dto.request.ProdImgUpdateReq;
-import indiv.neitdev.nollie_furniture.dto.request.ProdOptValUpdReq;
-import indiv.neitdev.nollie_furniture.dto.request.ProductCreateRequest;
+import indiv.neitdev.nollie_furniture.dto.request.*;
 import indiv.neitdev.nollie_furniture.dto.response.ProductResponse;
 import indiv.neitdev.nollie_furniture.entity.Product;
 
@@ -50,4 +47,11 @@ public interface ProductService {
      * @return the updated product response
      */
     ProductResponse updateProductOptionValue(ProdOptValUpdReq request);
+    
+    /**
+     * Adds a new option value to a product
+     * @param request the product option value add request
+     * @return the updated product response
+     */
+    ProductResponse addProductOptionValue(ProdOptValAddReq request);
 }

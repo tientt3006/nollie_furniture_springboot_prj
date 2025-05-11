@@ -62,4 +62,11 @@ public class ProductController {
         var result = productService.updateProductOptionValue(request);
         return ApiResponse.<ProductResponse>builder().result(result).build();
     }
+
+    @PostMapping("/add-opt-val")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<ProductResponse> addProductOptionValue(@ModelAttribute @Valid ProdOptValAddReq request) {
+        var result = productService.addProductOptionValue(request);
+        return ApiResponse.<ProductResponse>builder().result(result).build();
+    }
 }

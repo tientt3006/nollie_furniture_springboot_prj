@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -591,6 +592,67 @@ public class ProductServiceImpl implements ProductService {
             throw e;
         } catch (Exception e) {
             log.error("Error updating product option value: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse addProductOptionValue(ProdOptValAddReq request) {
+        try {
+            // Find product option by ID
+            ProductOption productOption = productOptionRepository.findById(request.getProductOptionId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_OPTION_NOT_FOUND));
+            
+            // Get product from product option
+            Product product = productOption.getProduct();
+            
+            // Find option value by ID
+            OptionValue optionValue = optionValueRepository.findById(request.getOptionValueId())
+                    .orElseThrow(() -> new AppException(ErrorCode.OPTION_VALUE_NOT_FOUND));
+            
+            // Validate that option value belongs to the option associated with product option
+            if (!optionValue.getOption().getId().equals(productOption.getOption().getId())) {
+                throw new AppException(ErrorCode.OPTION_VALUE_NOT_BELONG_TO_OPTION);
+            }
+
+            // Validate quantity
+            if (request.getQuantity() < 0) {
+                throw new AppException(ErrorCode.PRODUCT_QUANTITY_INVALID);
+            }
+            
+            // Check if this option value is already added to this product option
+            boolean valueExists = productOptionValueRepository.findByProductOption(productOption)
+                    .stream()
+                    .anyMatch(pov -> pov.getOptionValue().getId().equals(optionValue.getId()));
+                    
+            if (valueExists) {
+                throw new AppException(ErrorCode.OPTION_VALUE_ALREADY_ADDED);
+            }
+            
+            // Create new product option value
+            ProductOptionValue productOptionValue = ProductOptionValue.builder()
+                    .productOption(productOption)
+                    .optionValue(optionValue)
+                    .quantity(request.getQuantity())
+                    .addPrice(request.getAddPrice() != null ? request.getAddPrice() : BigDecimal.ZERO)
+                    .build();
+            
+            // Handle image if provided
+            if (request.getProdOptValImg() != null && !request.getProdOptValImg().isEmpty()) {
+                String imageUrl = awsS3Service.saveImageToS3(request.getProdOptValImg());
+                productOptionValue.setImgUrl(imageUrl);
+            }
+            
+            // Save to database
+            productOptionValueRepository.save(productOptionValue);
+            
+            // Return updated product
+            return buildProductResponse(product);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error adding product option value: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }

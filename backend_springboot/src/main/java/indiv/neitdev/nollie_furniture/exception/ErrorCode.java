@@ -61,6 +61,8 @@ public enum ErrorCode {
     PRODUCT_IMAGE_NOT_FOUND(4009, "Product image not found", HttpStatus.NOT_FOUND),
     PRODUCT_IMAGE_NOT_BELONG_TO_PRODUCT(4010, "Product image does not belong to the specified product", HttpStatus.BAD_REQUEST),
     PRODUCT_OPTION_VALUE_NOT_FOUND(4011, "Product option value not found", HttpStatus.NOT_FOUND),
+    PRODUCT_OPTION_NOT_FOUND(4012, "Product option not found", HttpStatus.NOT_FOUND),
+    OPTION_VALUE_ALREADY_ADDED(4013, "This option value has already been added to this product option", HttpStatus.CONFLICT),
 
 
 
