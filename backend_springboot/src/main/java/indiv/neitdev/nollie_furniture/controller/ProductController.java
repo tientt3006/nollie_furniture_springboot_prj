@@ -2,6 +2,7 @@ package indiv.neitdev.nollie_furniture.controller;
 
 import indiv.neitdev.nollie_furniture.dto.request.OptionCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.request.ProductCreateRequest;
+import indiv.neitdev.nollie_furniture.dto.request.ProdBaseInfoUpdateReq;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OptionResponse;
 import indiv.neitdev.nollie_furniture.dto.response.ProductResponse;
@@ -40,6 +41,13 @@ public class ProductController {
     @GetMapping("/{id}")
     public ApiResponse<ProductResponse> getProductById(@PathVariable Integer id) {
         var result = productService.getProductById(id);
+        return ApiResponse.<ProductResponse>builder().result(result).build();
+    }
+    
+    @PostMapping("/update-base-info")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<ProductResponse> updateProductBaseInfo(@RequestBody @Valid ProdBaseInfoUpdateReq request) {
+        var result = productService.updateProductBaseInfo(request);
         return ApiResponse.<ProductResponse>builder().result(result).build();
     }
 }

@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -34,9 +35,10 @@ public class ProductResponse {
     
     Integer baseProductQuantity;
 
-    String baseImageUrl;
+    // Integer for id and String for imgUrl of entity ProductImg
+    Map<Integer, String> baseImageUrl;
 
-    List<String> otherImagesUrl;
+    List<Map<Integer, String>> otherImageUrl;
 
     List<ProductOptionResponse> productOptionResponseList;
 }

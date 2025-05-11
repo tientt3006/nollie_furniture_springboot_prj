@@ -1,5 +1,6 @@
 package indiv.neitdev.nollie_furniture.service;
 
+import indiv.neitdev.nollie_furniture.dto.request.ProdBaseInfoUpdateReq;
 import indiv.neitdev.nollie_furniture.dto.request.ProductCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.response.ProductResponse;
 import indiv.neitdev.nollie_furniture.entity.Product;
@@ -26,4 +27,11 @@ public interface ProductService {
      * @return the product response
      */
     ProductResponse getProductById(Integer id);
+    
+    /**
+     * Updates the base information of a product
+     * @param request the product base info update request
+     * @return the updated product response
+     */
+    ProductResponse updateProductBaseInfo(ProdBaseInfoUpdateReq request);
 }

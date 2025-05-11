@@ -1,5 +1,6 @@
 package indiv.neitdev.nollie_furniture.service.impl;
 
+import indiv.neitdev.nollie_furniture.dto.request.ProdBaseInfoUpdateReq;
 import indiv.neitdev.nollie_furniture.dto.request.ProductCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.request.ProductOptionCreateRequest;
 import indiv.neitdev.nollie_furniture.dto.request.ProductOptionValueCreateRequest;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,20 +66,21 @@ public class ProductServiceImpl implements ProductService {
             product = productRepository.save(product);
 
             // 4. Handle product images
-            String baseImageUrl = null;
-            List<String> otherImagesUrl = new ArrayList<>();
+            Map<Integer, String> baseImageUrl = null;
+            List<Map<Integer, String>> otherImagesUrl = new ArrayList<>();
             
             // Save base image
             if (request.getBaseProductImage() != null && !request.getBaseProductImage().isEmpty()) {
-                baseImageUrl = saveProductImage(product, request.getBaseProductImage(), true);
+                ProductImg baseImg = saveProductImage(product, request.getBaseProductImage(), true);
+                baseImageUrl = Map.of(baseImg.getId(), baseImg.getImgUrl());
             }
             
             // Save other images
             if (request.getOtherProductImages() != null && !request.getOtherProductImages().isEmpty()) {
                 for (MultipartFile image : request.getOtherProductImages()) {
                     if (!image.isEmpty()) {
-                        String imageUrl = saveProductImage(product, image, false);
-                        otherImagesUrl.add(imageUrl);
+                        ProductImg otherImg = saveProductImage(product, image, false);
+                        otherImagesUrl.add(Map.of(otherImg.getId(), otherImg.getImgUrl()));
                     }
                 }
             }
@@ -104,7 +107,7 @@ public class ProductServiceImpl implements ProductService {
                     .description(product.getDescription())
                     .baseProductQuantity(product.getBaseProductQuantity())
                     .baseImageUrl(baseImageUrl)
-                    .otherImagesUrl(otherImagesUrl)
+                    .otherImageUrl(otherImagesUrl)
                     .productOptionResponseList(productOptionResponses)
                     .build();
         } catch (AppException e) {
@@ -193,7 +196,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private String saveProductImage(Product product, MultipartFile image, boolean isBaseImage) {
+    private ProductImg saveProductImage(Product product, MultipartFile image, boolean isBaseImage) {
         try {
             String imageUrl = awsS3Service.saveImageToS3(image);
             String imageName = image.getOriginalFilename();
@@ -204,9 +207,7 @@ public class ProductServiceImpl implements ProductService {
                     .imgName(imageName)
                     .build();
             
-            productImgRepository.save(productImg);
-            
-            return imageUrl;
+            return productImgRepository.save(productImg);
         } catch (Exception e) {
             log.error("Error saving product image: {}", e.getMessage());
             throw new AppException(ErrorCode.FAIL_UPLOAD_TO_S3);
@@ -327,15 +328,15 @@ public class ProductServiceImpl implements ProductService {
         List<ProductImg> productImgs = productImgRepository.findByProduct(product);
         
         // 2. Find base image and other images
-        String baseImageUrl = null;
-        List<String> otherImagesUrl = new ArrayList<>();
+        Map<Integer, String> baseImageUrl = null;
+        List<Map<Integer, String>> otherImagesUrl = new ArrayList<>();
         
         for (ProductImg img : productImgs) {
             // Add image URLs to the appropriate lists
             if (baseImageUrl == null) {
-                baseImageUrl = img.getImgUrl(); // First image is used as base image
+                baseImageUrl = Map.of(img.getId(), img.getImgUrl()); // First image is used as base image
             } else {
-                otherImagesUrl.add(img.getImgUrl());
+                otherImagesUrl.add(Map.of(img.getId(), img.getImgUrl()));
             }
         }
         
@@ -389,8 +390,70 @@ public class ProductServiceImpl implements ProductService {
                 .description(product.getDescription())
                 .baseProductQuantity(product.getBaseProductQuantity())
                 .baseImageUrl(baseImageUrl)
-                .otherImagesUrl(otherImagesUrl)
+                .otherImageUrl(otherImagesUrl)
                 .productOptionResponseList(productOptionResponses)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse updateProductBaseInfo(ProdBaseInfoUpdateReq request) {
+        try {
+            // Find product by ID
+            Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            
+            // Check if name is being changed and if the new name already exists
+            if (request.getName() != null && !request.getName().trim().isEmpty() && 
+                !request.getName().equalsIgnoreCase(product.getName())) {
+                if (productRepository.existsByNameIgnoreCase(request.getName().trim())) {
+                    throw new AppException(ErrorCode.PRODUCT_NAME_ALREADY_EXISTS);
+                }
+                product.setName(request.getName().trim());
+            }
+            
+            // Update category if provided
+            if (request.getCategoryId() > 0) {
+                Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                product.setCategory(category);
+            }
+            
+            // Update other fields if provided
+            if (request.getBasePrice() != null) {
+                product.setBasePrice(request.getBasePrice());
+            }
+            
+            if (request.getHeight() != null) {
+                product.setHeight(request.getHeight());
+            }
+            
+            if (request.getWidth() != null) {
+                product.setWidth(request.getWidth());
+            }
+            
+            if (request.getLength() != null) {
+                product.setLength(request.getLength());
+            }
+            
+            if (request.getDescription() != null) {
+                product.setDescription(request.getDescription());
+            }
+            
+            if (request.getBaseProductQuantity() > 0) {
+                product.setBaseProductQuantity(request.getBaseProductQuantity());
+            }
+            
+            // Save the updated product
+            product = productRepository.save(product);
+            
+            // Build and return the updated product response
+            return buildProductResponse(product);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error updating product base info: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 }
