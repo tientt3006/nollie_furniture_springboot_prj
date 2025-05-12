@@ -78,4 +78,15 @@ public interface OrderService {
             LocalDateTime endDate,
             String paymentMethod,
             OrderStatus status);
+    
+    /**
+     * Cancel an order with refund rules:
+     * - If within 3 days of order creation and status is not ON_DELIVERY: 100% refund
+     * - If status is ON_DELIVERY: 0% refund
+     * - Cannot cancel if status is RECEIVED or already CANCELED
+     * 
+     * @param orderId the ID of the order to cancel
+     * @return response containing cancellation details
+     */
+    Map<String, Object> cancelOrder(Integer orderId);
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
@@ -73,4 +74,12 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             @Param("paymentMethod") String paymentMethod,
             @Param("status") OrderStatus status,
             Pageable pageable);
+    
+    /**
+     * Find a specific order for a user by order ID
+     * @param user the user
+     * @param orderId the order ID
+     * @return optional order if found
+     */
+    Optional<Order> findByUserAndId(User user, Integer orderId);
 }

@@ -53,6 +53,19 @@ public class OrderController {
         var result = orderService.reorder(orderId);
         return ApiResponse.<Map<String, Object>>builder().result(result).build();
     }
+
+    /**
+     * Cancel an order if it meets the cancellation criteria
+     * @param orderId the ID of the order to cancel
+     * @return response containing cancellation details
+     */
+    @PostMapping("/{orderId}/cancel")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<Map<String, Object>> cancelOrder(@PathVariable Integer orderId) {
+        log.info("Order cancellation request received for order ID: {}", orderId);
+        var result = orderService.cancelOrder(orderId);
+        return ApiResponse.<Map<String, Object>>builder().result(result).build();
+    }
     
     /**
      * Get all orders for the current authenticated user

@@ -81,6 +81,11 @@ public enum ErrorCode {
     ORDER_CREATE_FAILED(6005, "Failed to create order", HttpStatus.INTERNAL_SERVER_ERROR),
     ORDER_NOT_FOUND(6006, "Order not found", HttpStatus.NOT_FOUND),
     
+    // New error codes for order cancellation
+    ORDER_ALREADY_CANCELED(6007, "Order is already canceled", HttpStatus.BAD_REQUEST),
+    ORDER_ALREADY_RECEIVED(6008, "Cannot cancel an order that has been received", HttpStatus.BAD_REQUEST),
+    ORDER_CANCELLATION_FAILED(6009, "Failed to cancel the order", HttpStatus.INTERNAL_SERVER_ERROR),
+    
     ;
 
     private int code;

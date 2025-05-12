@@ -594,4 +594,108 @@ public class OrderServiceImpl implements OrderService {
                 .thumbnailUrl(thumbnailUrl)
                 .build();
     }
+
+    @Override
+    @Transactional
+    public Map<String, Object> cancelOrder(Integer orderId) {
+        try {
+            log.info("Processing order cancellation for order ID: {}", orderId);
+            
+            // 1. Get current authenticated user
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // 2. Find the order
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+            
+            // 3. Verify that the order belongs to the current user
+            if (!order.getUser().getId().equals(user.getId())) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
+            
+            // 4. Check if order can be canceled
+            if (order.getStatus() == OrderStatus.CANCELED) {
+                throw new AppException(ErrorCode.ORDER_ALREADY_CANCELED);
+            }
+            
+            if (order.getStatus() == OrderStatus.RECEIVED) {
+                throw new AppException(ErrorCode.ORDER_ALREADY_RECEIVED);
+            }
+            
+            // 5. Determine refund percentage based on rules
+            BigDecimal refundPercentage;
+            String refundMessage;
+            
+            if (order.getStatus() == OrderStatus.ON_DELIVERY) {
+                // No refund if already in delivery
+                refundPercentage = BigDecimal.ZERO;
+                refundMessage = "Order was in delivery, no refund provided.";
+            } else {
+                // Check if within 3 days of order creation
+                LocalDateTime orderDate = order.getOrderDate();
+                LocalDateTime thresholdDate = orderDate.plusDays(3);
+                LocalDateTime now = LocalDateTime.now();
+                
+                if (now.isBefore(thresholdDate)) {
+                    // Within 3 days, 100% refund
+                    refundPercentage = BigDecimal.ONE;  // 1.0 = 100%
+                    refundMessage = "Order canceled within 3 days, full refund will be processed.";
+                } else {
+                    // After 3 days but before delivery, still use the 0% refund rule (can be adjusted if needed)
+                    refundPercentage = BigDecimal.ZERO;
+                    refundMessage = "Order cancellation period exceeded, no refund provided.";
+                }
+            }
+            
+            // 6. Get order items and restore product quantities
+            List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
+            
+            for (OrderItem item : orderItems) {
+                Product product = item.getProduct();
+                if(product == null) {
+                    continue; // Skip if product is null
+                }
+                ProductOptionValue optionValue = item.getProductOptionValue();
+                int quantity = item.getQuantity();
+                
+                // Restore quantities back to inventory
+                if (optionValue == null) {
+                    // Restore base product quantity
+                    product.setBaseProductQuantity(product.getBaseProductQuantity() + quantity);
+                    productRepository.save(product);
+                } else {
+                    // Restore option value quantity
+                    optionValue.setQuantity(optionValue.getQuantity() + quantity);
+                    productOptionValueRepository.save(optionValue);
+                }
+            }
+            
+            // 7. Update order status and refund information
+            order.setStatus(OrderStatus.CANCELED);
+            order.setCancelDate(LocalDateTime.now());
+            order.setRefund(refundPercentage);
+            order.setStatusDetail("Canceled by customer. " + refundMessage);
+            
+            // 8. Save the updated order
+            orderRepository.save(order);
+            
+            // 9. Build response with details
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "Order canceled successfully");
+            response.put("orderId", order.getId());
+            response.put("refundPercentage", refundPercentage.multiply(new BigDecimal(100)).intValue() + "%");
+            response.put("message", refundMessage);
+            
+            log.info("Order {} successfully canceled with {} refund", orderId, refundPercentage);
+            return response;
+            
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error canceling order: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.ORDER_CANCELLATION_FAILED);
+        }
+    }
 }
