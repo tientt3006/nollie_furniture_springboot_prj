@@ -112,4 +112,45 @@ public class OrderController {
                 
         return ApiResponse.<Page<OrderSummaryResponse>>builder().result(result).build();
     }
+
+    /**
+     * Admin API: Get all orders with comprehensive filtering, sorting, and pagination
+     * @param page page number (0-based)
+     * @param size page size
+     * @param orderId optional order ID to filter by
+     * @param search optional search term for customer name, address, email, or phone
+     * @param startDate optional start date for filtering
+     * @param endDate optional end date for filtering
+     * @param paymentMethod optional payment method filter
+     * @param status optional order status filter
+     * @param sortBy optional field to sort by (orderDate, total, id, fullName, status)
+     * @param sortDirection optional sort direction (ASC or DESC)
+     * @return page of order summaries matching the criteria
+     */
+    @GetMapping("/admin/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Page<OrderSummaryResponse>> adminSearchOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Integer orderId,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
+        
+        log.info("Admin order search request: page={}, size={}, orderId={}, search={}, startDate={}, endDate={}, paymentMethod={}, status={}, sortBy={}, sortDir={}",
+                page, size, orderId, search, startDate, endDate, paymentMethod, status, sortBy, sortDirection);
+        
+        // Create pageable for pagination
+        PageRequest pageRequest = PageRequest.of(page, size);
+        
+        var result = orderService.adminSearchOrders(
+                pageRequest, orderId, search, startDate, endDate, 
+                paymentMethod, status, sortBy, sortDirection);
+                
+        return ApiResponse.<Page<OrderSummaryResponse>>builder().result(result).build();
+    }
 }

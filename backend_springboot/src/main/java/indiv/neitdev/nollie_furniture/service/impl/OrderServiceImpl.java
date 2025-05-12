@@ -15,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -552,6 +554,89 @@ public class OrderServiceImpl implements OrderService {
             throw e;
         } catch (Exception e) {
             log.error("Error searching user orders: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    public Page<OrderSummaryResponse> adminSearchOrders(
+            Pageable pageable,
+            Integer orderId,
+            String searchText,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String paymentMethod,
+            OrderStatus status,
+            String sortBy,
+            String sortDirection) {
+        try {
+            log.info("Admin searching orders with filters: orderId={}, search={}, date range={} to {}, " +
+                    "paymentMethod={}, status={}, sortBy={}, sortDir={}", 
+                    orderId, searchText, startDate, endDate, paymentMethod, status, sortBy, sortDirection);
+            
+            // Clean up search term if provided
+            String cleanSearchText = null;
+            if (searchText != null && !searchText.trim().isEmpty()) {
+                cleanSearchText = searchText.trim();
+            }
+            
+            // Create sort specification with default sorting by orderDate DESC if not specified
+            Sort sort;
+            
+            if (sortBy != null && !sortBy.isEmpty()) {
+                Sort.Direction direction = Sort.Direction.DESC; // Default direction
+                
+                if (sortDirection != null && sortDirection.equalsIgnoreCase("ASC")) {
+                    direction = Sort.Direction.ASC;
+                }
+                
+                // Validate sortBy field to prevent errors
+                switch (sortBy.toLowerCase()) {
+                    case "total":
+                        sort = Sort.by(direction, "total");
+                        break;
+                    case "orderId":
+                    case "id":
+                        sort = Sort.by(direction, "id");
+                        break;
+                    case "fullName":
+                    case "name":
+                        sort = Sort.by(direction, "fullName");
+                        break;
+                    case "status":
+                        sort = Sort.by(direction, "status");
+                        break;
+                    default:
+                        // Default to orderDate
+                        sort = Sort.by(Sort.Direction.DESC, "orderDate");
+                }
+            } else {
+                // Default sorting: newest orders first
+                sort = Sort.by(Sort.Direction.DESC, "orderDate");
+            }
+            
+            // Create a new pageable with the sort specification
+            Pageable pageableWithSort = PageRequest.of(
+                pageable.getPageNumber(), 
+                pageable.getPageSize(),
+                sort
+            );
+            
+            // Execute the search
+            Page<Order> ordersPage = orderRepository.adminSearchOrders(
+                    orderId, 
+                    cleanSearchText,
+                    startDate, 
+                    endDate,
+                    paymentMethod, 
+                    status,
+                    pageableWithSort);
+            
+            // Map orders to DTOs
+            return ordersPage.map(this::mapOrderToSummary);
+            
+        } catch (Exception e) {
+            log.error("Error in admin order search: {}", e.getMessage(), e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }

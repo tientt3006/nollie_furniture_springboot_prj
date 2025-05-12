@@ -89,4 +89,29 @@ public interface OrderService {
      * @return response containing cancellation details
      */
     Map<String, Object> cancelOrder(Integer orderId);
+
+    /**
+     * Admin API: Get all orders with flexible filtering, sorting, and pagination options
+     * 
+     * @param pageable pagination information
+     * @param orderId optional order ID to filter by
+     * @param searchText optional search term for name, address, email, or phone
+     * @param startDate optional start date for filtering
+     * @param endDate optional end date for filtering
+     * @param paymentMethod optional payment method filter
+     * @param status optional order status filter
+     * @param sortBy optional field to sort by
+     * @param sortDirection optional sort direction (ASC or DESC)
+     * @return page of order summaries matching the criteria
+     */
+    Page<OrderSummaryResponse> adminSearchOrders(
+            Pageable pageable,
+            Integer orderId,
+            String searchText,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String paymentMethod,
+            OrderStatus status,
+            String sortBy,
+            String sortDirection);
 }

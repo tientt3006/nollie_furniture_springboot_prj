@@ -82,4 +82,35 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
      * @return optional order if found
      */
     Optional<Order> findByUserAndId(User user, Integer orderId);
+
+    /**
+     * Admin search for all orders with filtering options
+     * @param orderId optional order ID filter
+     * @param searchText optional search term for name, address, email, phone
+     * @param startDate optional start date
+     * @param endDate optional end date
+     * @param paymentMethod optional payment method filter
+     * @param status optional order status filter
+     * @param pageable pagination and sorting information
+     * @return page of matching orders
+     */
+    @Query("SELECT o FROM Order o WHERE " +
+           "(:orderId IS NULL OR CAST(o.id AS string) LIKE CONCAT('%', :orderId, '%')) " +
+           "AND (:searchText IS NULL OR " +
+           "     LOWER(o.fullName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+           "     LOWER(o.email) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+           "     LOWER(o.phone) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+           "     LOWER(o.address) LIKE LOWER(CONCAT('%', :searchText, '%'))) " +
+           "AND (:startDate IS NULL OR o.orderDate >= :startDate) " +
+           "AND (:endDate IS NULL OR o.orderDate <= :endDate) " +
+           "AND (:paymentMethod IS NULL OR o.paymentMethod = :paymentMethod) " +
+           "AND (:status IS NULL OR o.status = :status)")
+    Page<Order> adminSearchOrders(
+            @Param("orderId") Integer orderId,
+            @Param("searchText") String searchText,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("paymentMethod") String paymentMethod,
+            @Param("status") OrderStatus status,
+            Pageable pageable);
 }
