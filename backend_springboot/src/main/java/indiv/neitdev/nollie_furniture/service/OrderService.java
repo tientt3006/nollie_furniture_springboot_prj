@@ -114,4 +114,22 @@ public interface OrderService {
             OrderStatus status,
             String sortBy,
             String sortDirection);
+
+    /**
+     * Admin API: Updates order status in sequence: 
+     * ORDER_SUCCESSFUL -> ON_DELIVERY -> RECEIVED
+     * 
+     * @param orderId the ID of the order to update
+     * @return a map containing the update details
+     */
+    Map<String, Object> adminAdvanceOrderStatus(Integer orderId);
+    
+    /**
+     * Admin API: Cancels an order if it's not already RECEIVED or CANCELED
+     * 
+     * @param orderId the ID of the order to cancel
+     * @param cancelReason reason for cancellation
+     * @return a map containing the cancellation details
+     */
+    Map<String, Object> adminCancelOrder(Integer orderId, String cancelReason);
 }

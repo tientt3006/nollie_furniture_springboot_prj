@@ -783,4 +783,156 @@ public class OrderServiceImpl implements OrderService {
             throw new AppException(ErrorCode.ORDER_CANCELLATION_FAILED);
         }
     }
+
+    @Override
+    @Transactional
+    public Map<String, Object> adminAdvanceOrderStatus(Integer orderId) {
+        try {
+            log.info("Admin advancing order status for order ID: {}", orderId);
+            
+            // Find the order
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+            
+            // Check current status and determine next status
+            OrderStatus currentStatus = order.getStatus();
+            Map<String, Object> response = new HashMap<>();
+            
+            switch (currentStatus) {
+                case ORDER_SUCCESSFUL:
+                    // Update to ON_DELIVERY
+                    order.setStatus(OrderStatus.ON_DELIVERY);
+                    order.setStartDeliveryDate(LocalDateTime.now());
+                    order.setStatusDetail("Order is now being delivered.");
+                    orderRepository.save(order);
+                    
+                    response.put("status", "success");
+                    response.put("message", "Order status updated from ORDER_SUCCESSFUL to ON_DELIVERY");
+                    response.put("orderId", order.getId());
+                    response.put("newStatus", OrderStatus.ON_DELIVERY.toString());
+                    response.put("startDeliveryDate", order.getStartDeliveryDate());
+                    break;
+                    
+                case ON_DELIVERY:
+                    // Update to RECEIVED
+                    order.setStatus(OrderStatus.RECEIVED);
+                    order.setReceiveDate(LocalDateTime.now());
+                    order.setRefund(BigDecimal.ZERO); // 0% refund for received orders
+                    order.setStatusDetail("Order has been received by customer.");
+                    orderRepository.save(order);
+                    
+                    response.put("status", "success");
+                    response.put("message", "Order status updated from ON_DELIVERY to RECEIVED");
+                    response.put("orderId", order.getId());
+                    response.put("newStatus", OrderStatus.RECEIVED.toString());
+                    response.put("receiveDate", order.getReceiveDate());
+                    break;
+                    
+                case RECEIVED:
+                    response.put("status", "unchanged");
+                    response.put("message", "Order is already in RECEIVED status. No changes made.");
+                    response.put("orderId", order.getId());
+                    response.put("currentStatus", OrderStatus.RECEIVED.toString());
+                    break;
+                    
+                case CANCELED:
+                    response.put("status", "unchanged");
+                    response.put("message", "Order is in CANCELED status and cannot be advanced. No changes made.");
+                    response.put("orderId", order.getId());
+                    response.put("currentStatus", OrderStatus.CANCELED.toString());
+                    break;
+            }
+            
+            log.info("Admin order status advancement completed for order ID {}: {}", orderId, response);
+            return response;
+            
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error advancing order status: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> adminCancelOrder(Integer orderId, String cancelReason) {
+        try {
+            log.info("Admin canceling order ID: {} with reason: {}", orderId, cancelReason);
+            
+            // Find the order
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+            
+            // Check if order can be canceled
+            if (order.getStatus() == OrderStatus.CANCELED) {
+                throw new AppException(ErrorCode.ORDER_ALREADY_CANCELED);
+            }
+            
+            if (order.getStatus() == OrderStatus.RECEIVED) {
+                throw new AppException(ErrorCode.ORDER_ALREADY_RECEIVED);
+            }
+            
+            // Get order items to restore product quantities
+            List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
+            
+            for (OrderItem item : orderItems) {
+                Product product = item.getProduct();
+                if (product == null) {
+                    continue; // Skip if product is null (unlikely but safe check)
+                }
+                ProductOptionValue optionValue = item.getProductOptionValue();
+                int quantity = item.getQuantity();
+                
+                // Restore quantities back to inventory
+                if (optionValue == null) {
+                    // Restore base product quantity
+                    product.setBaseProductQuantity(product.getBaseProductQuantity() + quantity);
+                    productRepository.save(product);
+                } else {
+                    // Restore option value quantity
+                    optionValue.setQuantity(optionValue.getQuantity() + quantity);
+                    productOptionValueRepository.save(optionValue);
+                }
+            }
+            
+            // Set cancellation details based on current status
+            String statusDetail;
+            if (order.getStatus() == OrderStatus.ORDER_SUCCESSFUL) {
+                statusDetail = "Order canceled by admin. We sincerely apologize for any inconvenience. " +
+                         (cancelReason != null && !cancelReason.isEmpty() ? "Reason: " + cancelReason : "");
+            } else {
+                // ON_DELIVERY
+                statusDetail = "Order canceled during delivery. Customer did not accept the delivery. " +
+                         (cancelReason != null && !cancelReason.isEmpty() ? "Additional notes: " + cancelReason : "");
+            }
+            
+            // Update order status and refund information
+            order.setStatus(OrderStatus.CANCELED);
+            order.setCancelDate(LocalDateTime.now());
+            order.setRefund(BigDecimal.ONE); // 100% refund represented as 1.0
+            order.setStatusDetail(statusDetail);
+            
+            // Save the updated order
+            orderRepository.save(order);
+            
+            // Build response with details
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Order canceled successfully by admin");
+            response.put("orderId", order.getId());
+            response.put("cancelDate", order.getCancelDate());
+            response.put("refund", "100%");
+            response.put("statusDetail", statusDetail);
+            
+            log.info("Order {} successfully canceled by admin", orderId);
+            return response;
+            
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error in admin order cancellation: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.ORDER_CANCELLATION_FAILED);
+        }
+    }
 }

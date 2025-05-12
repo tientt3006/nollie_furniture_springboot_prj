@@ -153,4 +153,33 @@ public class OrderController {
                 
         return ApiResponse.<Page<OrderSummaryResponse>>builder().result(result).build();
     }
+
+    /**
+     * Admin API: Update order status in sequence (ORDER_SUCCESSFUL -> ON_DELIVERY -> RECEIVED)
+     * @param orderId the ID of the order to update
+     * @return response containing update details
+     */
+    @PostMapping("/admin/{orderId}/advance-status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Map<String, Object>> adminAdvanceOrderStatus(@PathVariable Integer orderId) {
+        log.info("Admin order status advancement request received for order ID: {}", orderId);
+        var result = orderService.adminAdvanceOrderStatus(orderId);
+        return ApiResponse.<Map<String, Object>>builder().result(result).build();
+    }
+    
+    /**
+     * Admin API: Cancel an order
+     * @param orderId the ID of the order to cancel
+     * @param cancelReason reason for cancellation (optional)
+     * @return response containing cancellation details
+     */
+    @PostMapping("/admin/{orderId}/cancel")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Map<String, Object>> adminCancelOrder(
+            @PathVariable Integer orderId, 
+            @RequestParam(required = false) String cancelReason) {
+        log.info("Admin order cancellation request received for order ID: {} with reason: {}", orderId, cancelReason);
+        var result = orderService.adminCancelOrder(orderId, cancelReason);
+        return ApiResponse.<Map<String, Object>>builder().result(result).build();
+    }
 }
