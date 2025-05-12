@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum OrderStatus {
-    ORDER_SUCCESSFUL("Order Successful"),
-    ON_DELIVERY("On Delivery"),
-    RECEIVED("Received"),
-    CANCELED("Canceled");
+    ORDER_SUCCESSFUL("ORDER SUCCESSFUL"),
+    ON_DELIVERY("ON DELIVERY"),
+    RECEIVED("RECEIVED"),
+    CANCELED("CANCELED");
 
     private final String status;
 

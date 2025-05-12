@@ -71,6 +71,15 @@ public enum ErrorCode {
     CART_NOT_FOUND(5001, "Cart not found", HttpStatus.NOT_FOUND),
     CART_ITEM_NOT_FOUND(5002, "Cart item not found", HttpStatus.NOT_FOUND),
     CART_INVALID_REQUEST(5003, "Invalid cart request - must specify either baseProductQuantity or productOptionValueIdsAndQuantity", HttpStatus.BAD_REQUEST),
+    CART_IS_EMPTY(5004, "Your cart is empty", HttpStatus.BAD_REQUEST),
+
+    // Order related errors
+    ORDER_FULLNAME_REQUIRED(6001, "Full name is required", HttpStatus.BAD_REQUEST),
+    ORDER_ADDRESS_REQUIRED(6002, "Shipping address is required", HttpStatus.BAD_REQUEST),
+    ORDER_PHONE_REQUIRED(6003, "Phone number is required", HttpStatus.BAD_REQUEST),
+    ORDER_PAYMENT_METHOD_REQUIRED(6004, "Payment method is required", HttpStatus.BAD_REQUEST),
+    ORDER_CREATE_FAILED(6005, "Failed to create order", HttpStatus.INTERNAL_SERVER_ERROR),
+    ORDER_NOT_FOUND(6006, "Order not found", HttpStatus.NOT_FOUND),
     
     ;
 

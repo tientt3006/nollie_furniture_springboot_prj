@@ -145,7 +145,8 @@ CREATE TABLE orders (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 ALTER TABLE orders
-ADD CONSTRAINT chk_status CHECK (status IN ('ORDER SUCCESSFUL', 'ON DELIVERY', 'RECEIVED', 'CANCELED'));
+ADD CONSTRAINT chk_status CHECK (status IN ('ORDER_SUCCESSFUL', 'ON_DELIVERY', 'RECEIVED', 'CANCELED'));
+
 ALTER TABLE orders
 ADD CONSTRAINT chk_refund CHECK (refund >= 0 AND refund <= 1);
 
