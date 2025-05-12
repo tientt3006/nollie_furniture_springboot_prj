@@ -562,6 +562,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderSummaryResponse> adminSearchOrders(
             Pageable pageable,
             Integer orderId,
+            Integer userId,
             String searchText,
             LocalDateTime startDate,
             LocalDateTime endDate,
@@ -570,9 +571,9 @@ public class OrderServiceImpl implements OrderService {
             String sortBy,
             String sortDirection) {
         try {
-            log.info("Admin searching orders with filters: orderId={}, search={}, date range={} to {}, " +
+            log.info("Admin searching orders with filters: orderId={}, userId={}, search={}, date range={} to {}, " +
                     "paymentMethod={}, status={}, sortBy={}, sortDir={}", 
-                    orderId, searchText, startDate, endDate, paymentMethod, status, sortBy, sortDirection);
+                    orderId, userId, searchText, startDate, endDate, paymentMethod, status, sortBy, sortDirection);
             
             // Clean up search term if provided
             String cleanSearchText = null;
@@ -625,6 +626,7 @@ public class OrderServiceImpl implements OrderService {
             // Execute the search
             Page<Order> ordersPage = orderRepository.adminSearchOrders(
                     orderId, 
+                    userId,
                     cleanSearchText,
                     startDate, 
                     endDate,
@@ -933,6 +935,93 @@ public class OrderServiceImpl implements OrderService {
         } catch (Exception e) {
             log.error("Error in admin order cancellation: {}", e.getMessage(), e);
             throw new AppException(ErrorCode.ORDER_CANCELLATION_FAILED);
+        }
+    }
+
+    @Override
+    public OrderResponse getOrderDetailsByAdmin(Integer orderId) {
+        try {
+            // 1. Find the order by ID without user ownership check
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+            
+            // 2. Get order items
+            List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
+            List<OrderItemResponse> orderItemResponses = new ArrayList<>();
+            
+            // 3. Convert order items to response objects
+            for (OrderItem item : orderItems) {
+                Product product = item.getProduct();
+                ProductOptionValue optionValue = item.getProductOptionValue();
+                
+                // Get product image for thumbnail
+                String imageUrl = null;
+                if (product != null) {
+                    List<ProductImg> productImages = productImgRepository.findByProduct(product);
+                    if (!productImages.isEmpty()) {
+                        imageUrl = productImages.get(0).getImgUrl();
+                    }
+                }
+                
+                // Build response with option information if available
+                OrderItemResponse orderItemResponse;
+                if (optionValue != null) {
+                    // Item has an option value
+                    OptionValue value = optionValue.getOptionValue();
+                    Option option = value.getOption();
+                    
+                    orderItemResponse = OrderItemResponse.builder()
+                            .id(item.getId())
+                            .productId(product != null ? product.getId() : null)
+                            .productName(product != null ? product.getName() : "Product no longer available")
+                            .quantity(item.getQuantity())
+                            .itemPrice(item.getItemPrice())
+                            .totalPrice(item.getItemPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                            .productOptionValueId(optionValue.getId())
+                            .optionName(option.getName())
+                            .optionValueName(value.getValue())
+                            .productImageUrl(imageUrl)
+                            .build();
+                } else {
+                    // Base product with no options
+                    orderItemResponse = OrderItemResponse.builder()
+                            .id(item.getId())
+                            .productId(product != null ? product.getId() : null)
+                            .productName(product != null ? product.getName() : "Product no longer available")
+                            .quantity(item.getQuantity())
+                            .itemPrice(item.getItemPrice())
+                            .totalPrice(item.getItemPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                            .productImageUrl(imageUrl)
+                            .build();
+                }
+                
+                orderItemResponses.add(orderItemResponse);
+            }
+            
+            // 4. Build and return the complete order response
+            return OrderResponse.builder()
+                    .orderId(order.getId())
+                    .orderDate(order.getOrderDate())
+                    .cancelDate(order.getCancelDate())
+                    .startDeliveryDate(order.getStartDeliveryDate())
+                    .receiveDate(order.getReceiveDate())
+                    .total(order.getTotal())
+                    .status(order.getStatus())
+                    .statusDetail(order.getStatusDetail())
+                    .refund(order.getRefund())
+                    .fullName(order.getFullName())
+                    .address(order.getAddress())
+                    .email(order.getEmail())
+                    .phone(order.getPhone())
+                    .paymentMethod(order.getPaymentMethod())
+                    .items(orderItemResponses)
+                    .build();
+            
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error getting order details by admin: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
 }

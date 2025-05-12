@@ -95,6 +95,7 @@ public interface OrderService {
      * 
      * @param pageable pagination information
      * @param orderId optional order ID to filter by
+     * @param userId optional user ID to filter by
      * @param searchText optional search term for name, address, email, or phone
      * @param startDate optional start date for filtering
      * @param endDate optional end date for filtering
@@ -107,6 +108,7 @@ public interface OrderService {
     Page<OrderSummaryResponse> adminSearchOrders(
             Pageable pageable,
             Integer orderId,
+            Integer userId,
             String searchText,
             LocalDateTime startDate,
             LocalDateTime endDate,
@@ -132,4 +134,11 @@ public interface OrderService {
      * @return a map containing the cancellation details
      */
     Map<String, Object> adminCancelOrder(Integer orderId, String cancelReason);
+
+    /**
+     * Admin API: Get order details by ID regardless of owner
+     * @param orderId the ID of the order to retrieve
+     * @return the order response with complete details
+     */
+    OrderResponse getOrderDetailsByAdmin(Integer orderId);
 }

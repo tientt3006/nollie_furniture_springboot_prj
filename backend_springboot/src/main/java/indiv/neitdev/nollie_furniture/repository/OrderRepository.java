@@ -86,6 +86,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     /**
      * Admin search for all orders with filtering options
      * @param orderId optional order ID filter
+     * @param userId optional user ID filter
      * @param searchText optional search term for name, address, email, phone
      * @param startDate optional start date
      * @param endDate optional end date
@@ -96,6 +97,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
      */
     @Query("SELECT o FROM Order o WHERE " +
            "(:orderId IS NULL OR CAST(o.id AS string) LIKE CONCAT('%', :orderId, '%')) " +
+           "AND (:userId IS NULL OR o.user.id = :userId) " +
            "AND (:searchText IS NULL OR " +
            "     LOWER(o.fullName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
            "     LOWER(o.email) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
@@ -107,6 +109,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
            "AND (:status IS NULL OR o.status = :status)")
     Page<Order> adminSearchOrders(
             @Param("orderId") Integer orderId,
+            @Param("userId") Integer userId,
             @Param("searchText") String searchText,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,

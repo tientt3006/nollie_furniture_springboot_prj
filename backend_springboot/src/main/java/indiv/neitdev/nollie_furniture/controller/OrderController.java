@@ -39,7 +39,7 @@ public class OrderController {
     }
     
     @GetMapping("/{orderId}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ApiResponse<OrderResponse> getOrderById(@PathVariable Integer orderId) {
         log.info("Get order details request received for order ID: {}", orderId);
         var result = orderService.getOrderById(orderId);
@@ -118,6 +118,7 @@ public class OrderController {
      * @param page page number (0-based)
      * @param size page size
      * @param orderId optional order ID to filter by
+     * @param userId optional user ID to filter by
      * @param search optional search term for customer name, address, email, or phone
      * @param startDate optional start date for filtering
      * @param endDate optional end date for filtering
@@ -133,6 +134,7 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Integer orderId,
+            @RequestParam(required = false) Integer userId,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
@@ -141,17 +143,30 @@ public class OrderController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection) {
         
-        log.info("Admin order search request: page={}, size={}, orderId={}, search={}, startDate={}, endDate={}, paymentMethod={}, status={}, sortBy={}, sortDir={}",
-                page, size, orderId, search, startDate, endDate, paymentMethod, status, sortBy, sortDirection);
+        log.info("Admin order search request: page={}, size={}, orderId={}, userId={}, search={}, startDate={}, endDate={}, paymentMethod={}, status={}, sortBy={}, sortDir={}",
+                page, size, orderId, userId, search, startDate, endDate, paymentMethod, status, sortBy, sortDirection);
         
         // Create pageable for pagination
         PageRequest pageRequest = PageRequest.of(page, size);
         
         var result = orderService.adminSearchOrders(
-                pageRequest, orderId, search, startDate, endDate, 
+                pageRequest, orderId, userId, search, startDate, endDate, 
                 paymentMethod, status, sortBy, sortDirection);
                 
         return ApiResponse.<Page<OrderSummaryResponse>>builder().result(result).build();
+    }
+
+    /**
+     * Admin API: Get order details by ID (without user ownership restriction)
+     * @param orderId the ID of the order to retrieve
+     * @return detailed order information
+     */
+    @GetMapping("/admin/{orderId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<OrderResponse> getOrderDetailsByAdmin(@PathVariable Integer orderId) {
+        log.info("Admin request to get order details received for order ID: {}", orderId);
+        var result = orderService.getOrderDetailsByAdmin(orderId);
+        return ApiResponse.<OrderResponse>builder().result(result).build();
     }
 
     /**
