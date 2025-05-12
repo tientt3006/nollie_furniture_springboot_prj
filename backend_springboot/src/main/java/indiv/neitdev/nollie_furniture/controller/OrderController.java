@@ -4,6 +4,7 @@ import indiv.neitdev.nollie_furniture.dto.request.MakeOrderRequest;
 import indiv.neitdev.nollie_furniture.dto.response.ApiResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OrderResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OrderSummaryResponse;
+import indiv.neitdev.nollie_furniture.enums.OrderStatus;
 import indiv.neitdev.nollie_furniture.service.OrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -66,12 +67,14 @@ public class OrderController {
     }
     
     /**
-     * Search orders with pagination and filtering
+     * Enhanced search for orders with more flexible filtering options
      * @param page page number (0-based)
      * @param size page size
-     * @param orderId optional order ID to search for
+     * @param search optional search term for orderId, name, email, phone, or address
      * @param startDate optional start date for filtering
      * @param endDate optional end date for filtering
+     * @param paymentMethod optional payment method filter
+     * @param status optional order status filter
      * @return page of order summaries matching the criteria
      */
     @GetMapping("/user/search")
@@ -79,17 +82,21 @@ public class OrderController {
     public ApiResponse<Page<OrderSummaryResponse>> searchUserOrders(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Integer orderId,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) OrderStatus status) {
         
-        log.info("Order search request received with params: page={}, size={}, orderId={}, startDate={}, endDate={}",
-                page, size, orderId, startDate, endDate);
+        log.info("Enhanced order search request: page={}, size={}, search={}, startDate={}, endDate={}, paymentMethod={}, status={}",
+                page, size, search, startDate, endDate, paymentMethod, status);
         
         // Create pageable with sorting by order date descending (newest first)
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
         
-        var result = orderService.searchUserOrders(pageRequest, orderId, startDate, endDate);
+        var result = orderService.enhancedSearchUserOrders(
+                pageRequest, search, startDate, endDate, paymentMethod, status);
+                
         return ApiResponse.<Page<OrderSummaryResponse>>builder().result(result).build();
     }
 }

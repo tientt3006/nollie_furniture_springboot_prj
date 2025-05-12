@@ -4,6 +4,7 @@ import indiv.neitdev.nollie_furniture.dto.request.MakeOrderRequest;
 import indiv.neitdev.nollie_furniture.dto.response.OrderResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OrderSummaryResponse;
 import indiv.neitdev.nollie_furniture.entity.Product;
+import indiv.neitdev.nollie_furniture.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -59,4 +60,22 @@ public interface OrderService {
             Integer orderId,
             LocalDateTime startDate,
             LocalDateTime endDate);
+    
+    /**
+     * Enhanced search for orders with more flexible filtering options
+     * @param pageable pagination information
+     * @param searchTerm optional search term for ID, name, email, phone, address
+     * @param startDate optional start date for filtering
+     * @param endDate optional end date for filtering
+     * @param paymentMethod optional payment method filter
+     * @param status optional order status filter
+     * @return page of order summaries matching the criteria
+     */
+    Page<OrderSummaryResponse> enhancedSearchUserOrders(
+            Pageable pageable,
+            String searchTerm,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String paymentMethod,
+            OrderStatus status);
 }

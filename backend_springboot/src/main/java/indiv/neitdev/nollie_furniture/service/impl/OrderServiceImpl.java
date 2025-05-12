@@ -522,6 +522,40 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    @Override
+    public Page<OrderSummaryResponse> enhancedSearchUserOrders(
+            Pageable pageable,
+            String searchTerm,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String paymentMethod,
+            OrderStatus status) {
+        try {
+            // 1. Get current authenticated user
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // 2. Clean up search term if provided
+            String cleanSearchTerm = searchTerm;
+            if (searchTerm != null && searchTerm.trim().isEmpty()) {
+                cleanSearchTerm = null;
+            }
+            
+            // 3. Search orders with enhanced filters
+            Page<Order> ordersPage = orderRepository.enhancedSearchOrders(
+                    user, cleanSearchTerm, startDate, endDate, paymentMethod, status, pageable);
+            
+            // 4. Map to DTOs
+            return ordersPage.map(this::mapOrderToSummary);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error searching user orders: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
     /**
      * Helper method to map an Order entity to OrderSummaryResponse
      */
