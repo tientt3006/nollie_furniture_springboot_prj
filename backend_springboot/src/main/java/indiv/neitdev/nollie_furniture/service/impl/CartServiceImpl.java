@@ -155,6 +155,116 @@ public class CartServiceImpl implements CartService {
         }
     }
 
+    @Override
+    @Transactional
+    public String updateCartItemQuantity(Integer cartItemId, Integer quantity) {
+        try {
+            // Validate quantity
+            if (quantity <= 0) {
+                throw new AppException(ErrorCode.PRODUCT_QUANTITY_INVALID);
+            }
+            
+            // 1. Get current authenticated user from SecurityContext
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // 2. Find the user's cart
+            Cart cart = cartRepository.findByUser(user)
+                    .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+            
+            // 3. Find the cart item
+            CartItem cartItem = cartItemRepository.findById(cartItemId)
+                    .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+            
+            // 4. Verify the cart item belongs to the user's cart
+            if (!cartItem.getCart().getId().equals(cart.getId())) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
+            
+            // 5. Check product availability
+            int oldQuantity = cartItem.getQuantity();
+            Product product = cartItem.getProduct();
+            ProductOptionValue optionValue = cartItem.getProductOptionValue();
+            
+            // 5a. Check if sufficient quantity available - for base product or option value
+            if (optionValue == null) {
+                // Base product quantity check
+                if (product.getBaseProductQuantity() < quantity) {
+                    throw new AppException(ErrorCode.PRODUCT_QUANTITY_INSUFFICIENT);
+                }
+            } else {
+                // Option value quantity check
+                if (optionValue.getQuantity() < quantity) {
+                    throw new AppException(ErrorCode.PRODUCT_QUANTITY_INSUFFICIENT);
+                }
+            }
+            
+            // 6. Calculate price difference for cart total update
+            BigDecimal oldTotalPrice = cartItem.getItemPrice().multiply(BigDecimal.valueOf(oldQuantity));
+            BigDecimal newTotalPrice = cartItem.getItemPrice().multiply(BigDecimal.valueOf(quantity));
+            BigDecimal priceDifference = newTotalPrice.subtract(oldTotalPrice);
+            
+            // 7. Update cart item quantity
+            cartItem.setQuantity(quantity);
+            cartItemRepository.save(cartItem);
+            
+            // 8. Update cart total
+            cart.setTotal(cart.getTotal().add(priceDifference));
+            cartRepository.save(cart);
+            
+            return "Cart item quantity updated successfully";
+            
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error updating cart item quantity: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    @Transactional
+    public String removeCartItem(Integer cartItemId) {
+        try {
+            // 1. Get current authenticated user from SecurityContext
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // 2. Find the user's cart
+            Cart cart = cartRepository.findByUser(user)
+                    .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+            
+            // 3. Find the cart item
+            CartItem cartItem = cartItemRepository.findById(cartItemId)
+                    .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+            
+            // 4. Verify the cart item belongs to the user's cart
+            if (!cartItem.getCart().getId().equals(cart.getId())) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
+            
+            // 5. Calculate price to subtract from cart total
+            BigDecimal priceToSubtract = cartItem.getItemPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+            
+            // 6. Update cart total
+            cart.setTotal(cart.getTotal().subtract(priceToSubtract));
+            cartRepository.save(cart);
+            
+            // 7. Remove the cart item
+            cartItemRepository.delete(cartItem);
+            
+            return "Cart item removed successfully";
+            
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error removing cart item: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
     private void addBaseProductToCart(Cart cart, Product product, Integer quantity) {
         // Validate quantity
         if (quantity <= 0) {

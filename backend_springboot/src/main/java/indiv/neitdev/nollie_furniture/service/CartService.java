@@ -8,4 +8,9 @@ public interface CartService {
     
     // Add a new method to view cart contents
     CartResponse viewCart();
+    
+    // New methods for updating and removing cart items
+    String updateCartItemQuantity(Integer cartItemId, Integer quantity);
+    
+    String removeCartItem(Integer cartItemId);
 }

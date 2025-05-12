@@ -33,4 +33,22 @@ public class CartController {
         var result = cartService.viewCart();
         return ApiResponse.<CartResponse>builder().result(result).build();
     }
+    
+    @PutMapping("/item/{cartItemId}/quantity/{quantity}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<String> updateCartItemQuantity(
+            @PathVariable Integer cartItemId,
+            @PathVariable Integer quantity) {
+        log.info("Updating quantity of cart item ID {} to {}", cartItemId, quantity);
+        var result = cartService.updateCartItemQuantity(cartItemId, quantity);
+        return ApiResponse.<String>builder().result(result).build();
+    }
+    
+    @DeleteMapping("/item/{cartItemId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<String> removeCartItem(@PathVariable Integer cartItemId) {
+        log.info("Removing cart item ID {}", cartItemId);
+        var result = cartService.removeCartItem(cartItemId);
+        return ApiResponse.<String>builder().result(result).build();
+    }
 }
