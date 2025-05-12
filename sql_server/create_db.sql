@@ -120,6 +120,9 @@ CREATE TABLE carts_item (
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
   FOREIGN KEY (product_option_value_id) REFERENCES products_options_value(id) ON DELETE SET NULL
 );
+ALTER TABLE carts_item
+ADD item_price DECIMAL(18, 2) NOT NULL DEFAULT 0;
+
 
 -- 5. Bảng đơn hàng và các bảng liên quan
 CREATE TABLE orders (

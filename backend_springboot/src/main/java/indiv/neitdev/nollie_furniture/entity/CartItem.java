@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
+
 @Entity
 @Data
 @Builder
@@ -19,6 +21,9 @@ public class CartItem {
 
     @Column(name = "quantity", nullable = false)
     Integer quantity;
+    
+    @Column(name = "item_price", nullable = false, precision = 18, scale = 2)
+    BigDecimal itemPrice;
 
     @ManyToOne
     @JoinColumn(name = "cart_id", nullable = false)

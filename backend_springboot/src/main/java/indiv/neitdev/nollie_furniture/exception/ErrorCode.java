@@ -64,9 +64,14 @@ public enum ErrorCode {
     PRODUCT_OPTION_VALUE_NOT_FOUND(4011, "Product option value not found", HttpStatus.NOT_FOUND),
     PRODUCT_OPTION_NOT_FOUND(4012, "Product option not found", HttpStatus.NOT_FOUND),
     OPTION_VALUE_ALREADY_ADDED(4013, "This option value has already been added to this product option", HttpStatus.CONFLICT),
-
-
-
+    PRODUCT_QUANTITY_INSUFFICIENT(4015, "Insufficient product quantity available", HttpStatus.BAD_REQUEST),
+    PRODUCT_OPTION_VALUE_NOT_BELONG_TO_PRODUCT(4016, "Product option value does not belong to this product", HttpStatus.BAD_REQUEST),
+    
+    // Cart related errors
+    CART_NOT_FOUND(5001, "Cart not found", HttpStatus.NOT_FOUND),
+    CART_ITEM_NOT_FOUND(5002, "Cart item not found", HttpStatus.NOT_FOUND),
+    CART_INVALID_REQUEST(5003, "Invalid cart request - must specify either baseProductQuantity or productOptionValueIdsAndQuantity", HttpStatus.BAD_REQUEST),
+    
     ;
 
     private int code;
