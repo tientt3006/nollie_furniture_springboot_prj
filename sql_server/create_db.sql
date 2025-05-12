@@ -160,3 +160,5 @@ CREATE TABLE orders_item (
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
   FOREIGN KEY (product_option_value_id) REFERENCES products_options_value(id) ON DELETE SET NULL
 );
+ALTER TABLE orders_item
+ADD item_price DECIMAL(18, 2) NOT NULL DEFAULT 0;

@@ -2,6 +2,7 @@ package indiv.neitdev.nollie_furniture.service.impl;
 
 import indiv.neitdev.nollie_furniture.dto.request.AddToCartReq;
 import indiv.neitdev.nollie_furniture.dto.response.CartResponse;
+import indiv.neitdev.nollie_furniture.dto.response.CartItemResponse;
 import indiv.neitdev.nollie_furniture.entity.*;
 import indiv.neitdev.nollie_furniture.exception.AppException;
 import indiv.neitdev.nollie_furniture.exception.ErrorCode;
@@ -28,6 +29,7 @@ public class CartServiceImpl implements CartService {
     UserRepository userRepository;
     ProductRepository productRepository;
     ProductOptionValueRepository productOptionValueRepository;
+    ProductImgRepository productImgRepository;
 
     @Override
     @Transactional
@@ -70,7 +72,87 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartResponse viewCart() {
-        return null;
+        try {
+            // Get current authenticated user from SecurityContext
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // Find cart for this user or return empty cart
+            Optional<Cart> optionalCart = cartRepository.findByUser(user);
+            
+            if (optionalCart.isEmpty()) {
+                // Return empty cart if user doesn't have one yet
+                return CartResponse.builder()
+                        .cartId(null)
+                        .total(BigDecimal.ZERO)
+                        .items(new ArrayList<>())
+                        .build();
+            }
+            
+            Cart cart = optionalCart.get();
+            List<CartItem> cartItems = cartItemRepository.findByCart(cart);
+            List<CartItemResponse> cartItemResponses = new ArrayList<>();
+            
+            // Map cart items to response objects
+            for (CartItem item : cartItems) {
+                Product product = item.getProduct();
+                ProductOptionValue optionValue = item.getProductOptionValue();
+                
+                // Get product images for thumbnail
+                String imageUrl = null;
+                List<ProductImg> productImages = productImgRepository.findByProduct(product);
+                if (!productImages.isEmpty()) {
+                    imageUrl = productImages.get(0).getImgUrl();
+                }
+                
+                // Build response with option information if available
+                CartItemResponse cartItemResponse;
+                if (optionValue != null) {
+                    // Item has an option value
+                    OptionValue value = optionValue.getOptionValue();
+                    Option option = value.getOption();
+                    
+                    cartItemResponse = CartItemResponse.builder()
+                            .id(item.getId())
+                            .productId(product.getId())
+                            .productName(product.getName())
+                            .quantity(item.getQuantity())
+                            .itemPrice(item.getItemPrice())
+                            .totalPrice(item.getItemPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                            .productOptionValueId(optionValue.getId())
+                            .optionName(option.getName())
+                            .optionValueName(value.getValue())
+                            .productImageUrl(imageUrl)
+                            .build();
+                } else {
+                    // Base product with no options
+                    cartItemResponse = CartItemResponse.builder()
+                            .id(item.getId())
+                            .productId(product.getId())
+                            .productName(product.getName())
+                            .quantity(item.getQuantity())
+                            .itemPrice(item.getItemPrice())
+                            .totalPrice(item.getItemPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                            .productImageUrl(imageUrl)
+                            .build();
+                }
+                
+                cartItemResponses.add(cartItemResponse);
+            }
+            
+            // Build and return the complete cart response
+            return CartResponse.builder()
+                    .cartId(cart.getId())
+                    .total(cart.getTotal())
+                    .items(cartItemResponses)
+                    .build();
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error viewing cart: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     private void addBaseProductToCart(Cart cart, Product product, Integer quantity) {

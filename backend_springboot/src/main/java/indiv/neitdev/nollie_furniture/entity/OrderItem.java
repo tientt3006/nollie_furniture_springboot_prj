@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
+
 @Entity
 @Data
 @Builder
@@ -24,6 +26,9 @@ public class OrderItem {
     @ManyToOne
     @JoinColumn(name = "product_id")
     Product product;
+
+    @Column(name = "item_price", nullable = false, precision = 18, scale = 2)
+    BigDecimal itemPrice;
 
     @Column(name = "quantity", nullable = false)
     Integer quantity;
