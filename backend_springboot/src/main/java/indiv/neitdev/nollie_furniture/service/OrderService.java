@@ -28,4 +28,11 @@ public interface OrderService {
      * @return the order response with details
      */
     OrderResponse getOrderById(Integer orderId);
+    
+    /**
+     * Reorder an existing order by copying its items to the user's cart
+     * @param orderId the ID of the order to reorder
+     * @return message indicating success or warnings about items that couldn't be added
+     */
+    Map<String, Object> reorder(Integer orderId);
 }

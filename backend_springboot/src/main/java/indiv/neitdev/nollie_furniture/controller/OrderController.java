@@ -37,4 +37,12 @@ public class OrderController {
         var result = orderService.getOrderById(orderId);
         return ApiResponse.<OrderResponse>builder().result(result).build();
     }
+    
+    @PostMapping("/{orderId}/reorder")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<Map<String, Object>> reorder(@PathVariable Integer orderId) {
+        log.info("Reorder request received for order ID: {}", orderId);
+        var result = orderService.reorder(orderId);
+        return ApiResponse.<Map<String, Object>>builder().result(result).build();
+    }
 }

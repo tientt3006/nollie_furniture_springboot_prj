@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -264,5 +265,204 @@ public class OrderServiceImpl implements OrderService {
             log.error("Error getting order details: {}", e.getMessage(), e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> reorder(Integer orderId) {
+        try {
+            log.info("Reordering from order ID: {}", orderId);
+            
+            // 1. Get current authenticated user
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // 2. Find the original order
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+            
+            // 3. Verify that the order belongs to the current user
+            if (!order.getUser().getId().equals(user.getId())) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
+            
+            // 4. Get or create the user's cart
+            Cart cart = cartRepository.findByUser(user)
+                    .orElseGet(() -> {
+                        Cart newCart = Cart.builder()
+                                .user(user)
+                                .total(BigDecimal.ZERO)
+                                .build();
+                        return cartRepository.save(newCart);
+                    });
+            
+            // 5. Clear the current cart
+            List<CartItem> currentCartItems = cartItemRepository.findByCart(cart);
+            if (!currentCartItems.isEmpty()) {
+                cartItemRepository.deleteAll(currentCartItems);
+                cart.setTotal(BigDecimal.ZERO);
+                cart = cartRepository.save(cart);
+            }
+            
+            // 6. Get original order items
+            List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
+            
+            // Track unavailable items and total added items
+            List<String> unavailableItems = new ArrayList<>();
+            int totalItemsAdded = 0;
+            
+            // 7. Process each order item
+            for (OrderItem orderItem : orderItems) {
+                Product product = orderItem.getProduct();
+                ProductOptionValue productOptionValue = orderItem.getProductOptionValue();
+                int quantity = orderItem.getQuantity();
+                
+                // 8. Check if product still exists
+                if (product == null || !productRepository.existsById(product.getId())) {
+                    unavailableItems.add("Product no longer exists");
+                    continue;
+                }
+                
+                // 9. Refresh product data from database
+                product = productRepository.findById(product.getId()).orElse(null);
+                if (product == null) {
+                    unavailableItems.add("Product no longer exists");
+                    continue;
+                }
+                
+                // 10. If item has option value, check if it still exists
+                if (productOptionValue != null) {
+                    try {
+                        productOptionValue = productOptionValueRepository.findById((long) productOptionValue.getId())
+                            .orElse(null);
+                        
+                        if (productOptionValue == null) {
+                            unavailableItems.add("Product option " + product.getName() + " is no longer available");
+                            continue;
+                        }
+                        
+                        // 11. Check if sufficient quantity is available
+                        if (productOptionValue.getQuantity() < quantity) {
+                            // Add with available quantity instead
+                            if (productOptionValue.getQuantity() > 0) {
+                                addToCartWithOption(cart, product, productOptionValue, productOptionValue.getQuantity());
+                                unavailableItems.add("Added " + productOptionValue.getQuantity() + " of " + 
+                                    product.getName() + " (requested: " + quantity + ")");
+                                totalItemsAdded++;
+                            } else {
+                                unavailableItems.add("Product " + product.getName() + " is out of stock");
+                            }
+                            continue;
+                        }
+                        
+                        // 12. Add item with option to cart
+                        addToCartWithOption(cart, product, productOptionValue, quantity);
+                        totalItemsAdded++;
+                        
+                    } catch (Exception e) {
+                        log.error("Error processing product option value: {}", e.getMessage());
+                        unavailableItems.add("Error processing " + product.getName() + " options");
+                        continue;
+                    }
+                } else {
+                    // 13. Handle base product without options
+                    // Check if sufficient quantity is available
+                    if (product.getBaseProductQuantity() < quantity) {
+                        // Add with available quantity instead
+                        if (product.getBaseProductQuantity() > 0) {
+                            addToCartBaseProduct(cart, product, product.getBaseProductQuantity());
+                            unavailableItems.add("Added " + product.getBaseProductQuantity() + " of " + 
+                                product.getName() + " (requested: " + quantity + ")");
+                            totalItemsAdded++;
+                        } else {
+                            unavailableItems.add("Product " + product.getName() + " is out of stock");
+                        }
+                        continue;
+                    }
+                    
+                    // 14. Add base product to cart
+                    addToCartBaseProduct(cart, product, quantity);
+                    totalItemsAdded++;
+                }
+            }
+            
+            // 15. Prepare response with status and warnings
+            Map<String, Object> response = new HashMap<>();
+            
+            if (totalItemsAdded == 0) {
+                response.put("status", "No items could be added to your cart");
+            } else if (!unavailableItems.isEmpty()) {
+                response.put("status", "Some items were added to your cart with modifications");
+                response.put("warnings", unavailableItems);
+            } else {
+                response.put("status", "All items from your previous order have been added to your cart");
+            }
+            
+            return response;
+            
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error during reorder: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+    
+    // Helper method to add a base product to cart
+    private void addToCartBaseProduct(Cart cart, Product product, int quantity) {
+        // Calculate item price
+        BigDecimal itemPrice = product.getBasePrice();
+        if (itemPrice == null) {
+            itemPrice = BigDecimal.ZERO;
+            log.warn("Product {} has null base price, using 0", product.getId());
+        }
+        
+        BigDecimal totalItemPrice = itemPrice.multiply(BigDecimal.valueOf(quantity));
+        
+        // Create cart item
+        CartItem cartItem = CartItem.builder()
+                .cart(cart)
+                .product(product)
+                .quantity(quantity)
+                .itemPrice(itemPrice)
+                .build();
+        
+        cartItemRepository.save(cartItem);
+        
+        // Update cart total
+        cart.setTotal(cart.getTotal().add(totalItemPrice));
+        cartRepository.save(cart);
+    }
+    
+    // Helper method to add a product with option value to cart
+    private void addToCartWithOption(Cart cart, Product product, ProductOptionValue productOptionValue, int quantity) {
+        // Calculate item price with option value additional price
+        BigDecimal itemPrice = product.getBasePrice();
+        if (itemPrice == null) {
+            itemPrice = BigDecimal.ZERO;
+            log.warn("Product {} has null base price, using 0", product.getId());
+        }
+        
+        if (productOptionValue.getAddPrice() != null) {
+            itemPrice = itemPrice.add(productOptionValue.getAddPrice());
+        }
+        
+        BigDecimal totalItemPrice = itemPrice.multiply(BigDecimal.valueOf(quantity));
+        
+        // Create cart item with option value
+        CartItem cartItem = CartItem.builder()
+                .cart(cart)
+                .product(product)
+                .productOptionValue(productOptionValue)
+                .quantity(quantity)
+                .itemPrice(itemPrice)
+                .build();
+        
+        cartItemRepository.save(cartItem);
+        
+        // Update cart total
+        cart.setTotal(cart.getTotal().add(totalItemPrice));
+        cartRepository.save(cart);
     }
 }
