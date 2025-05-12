@@ -1,5 +1,6 @@
 package indiv.neitdev.nollie_furniture.repository;
 
+import indiv.neitdev.nollie_furniture.entity.Order;
 import indiv.neitdev.nollie_furniture.entity.OrderItem;
 import indiv.neitdev.nollie_furniture.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,4 +26,11 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
            "GROUP BY oi.product " +
            "ORDER BY SUM(oi.quantity) DESC")
     List<Product> findTopSellingProducts(@Param("startDate") LocalDateTime startDate, @Param("limit") int limit);
+    
+    /**
+     * Find all order items for a specific order
+     * @param order the order
+     * @return list of order items
+     */
+    List<OrderItem> findByOrder(Order order);
 }

@@ -1,9 +1,11 @@
 package indiv.neitdev.nollie_furniture.service;
 
 import indiv.neitdev.nollie_furniture.dto.request.MakeOrderRequest;
+import indiv.neitdev.nollie_furniture.dto.response.OrderResponse;
 import indiv.neitdev.nollie_furniture.entity.Product;
 
 import java.util.List;
+import java.util.Map;
 
 public interface OrderService {
     /**
@@ -18,5 +20,12 @@ public interface OrderService {
      * @param request the order request containing customer information
      * @return success message
      */
-    String makeOrder(MakeOrderRequest request);
+    Map<String, Integer> makeOrder(MakeOrderRequest request);
+    
+    /**
+     * Get order details by order ID
+     * @param orderId the order ID
+     * @return the order response with details
+     */
+    OrderResponse getOrderById(Integer orderId);
 }

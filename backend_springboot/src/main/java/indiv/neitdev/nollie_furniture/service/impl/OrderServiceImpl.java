@@ -1,6 +1,8 @@
 package indiv.neitdev.nollie_furniture.service.impl;
 
 import indiv.neitdev.nollie_furniture.dto.request.MakeOrderRequest;
+import indiv.neitdev.nollie_furniture.dto.response.OrderItemResponse;
+import indiv.neitdev.nollie_furniture.dto.response.OrderResponse;
 import indiv.neitdev.nollie_furniture.entity.*;
 import indiv.neitdev.nollie_furniture.enums.OrderStatus;
 import indiv.neitdev.nollie_furniture.exception.AppException;
@@ -15,8 +17,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -31,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     CartItemRepository cartItemRepository;
     ProductRepository productRepository;
     ProductOptionValueRepository productOptionValueRepository;
+    ProductImgRepository productImgRepository;
     
     @Override
     public List<Product> getTopSellingProducts(int limit) {
@@ -48,7 +54,7 @@ public class OrderServiceImpl implements OrderService {
     
     @Override
     @Transactional
-    public String makeOrder(MakeOrderRequest request) {
+    public Map<String, Integer> makeOrder(MakeOrderRequest request) {
         try {
             log.info("Creating new order from request: {}", request);
             
@@ -134,8 +140,9 @@ public class OrderServiceImpl implements OrderService {
             cartRepository.save(cart);
             
             log.info("Order created successfully with ID: {}", order.getId());
-            return "Đặt hàng thành công. Mã đơn hàng: " + order.getId();
-            
+            return Map.of("Đặt hàng thành công.", order.getId());
+
+
         } catch (AppException e) {
             log.error("Error creating order: {}", e.getMessage());
             throw e;
@@ -161,6 +168,101 @@ public class OrderServiceImpl implements OrderService {
         
         if (request.getPaymentMethod() == null || request.getPaymentMethod().trim().isEmpty()) {
             throw new AppException(ErrorCode.ORDER_PAYMENT_METHOD_REQUIRED);
+        }
+    }
+
+    @Override
+    public OrderResponse getOrderById(Integer orderId) {
+        try {
+            // 1. Get current authenticated user
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // 2. Find the order
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+            
+            // 3. Check that the order belongs to the current user
+            if (!order.getUser().getId().equals(user.getId())) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
+            
+            // 4. Get order items
+            List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
+            List<OrderItemResponse> orderItemResponses = new ArrayList<>();
+            
+            // 5. Convert order items to response objects
+            for (OrderItem item : orderItems) {
+                Product product = item.getProduct();
+                ProductOptionValue optionValue = item.getProductOptionValue();
+                
+                // Get product image for thumbnail
+                String imageUrl = null;
+                List<ProductImg> productImages = productImgRepository.findByProduct(product);
+                if (!productImages.isEmpty()) {
+                    imageUrl = productImages.get(0).getImgUrl();
+                }
+                
+                // Build response with option information if available
+                OrderItemResponse orderItemResponse;
+                if (optionValue != null) {
+                    // Item has an option value
+                    OptionValue value = optionValue.getOptionValue();
+                    Option option = value.getOption();
+                    
+                    orderItemResponse = OrderItemResponse.builder()
+                            .id(item.getId())
+                            .productId(product.getId())
+                            .productName(product.getName())
+                            .quantity(item.getQuantity())
+                            .itemPrice(item.getItemPrice())
+                            .totalPrice(item.getItemPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                            .productOptionValueId(optionValue.getId())
+                            .optionName(option.getName())
+                            .optionValueName(value.getValue())
+                            .productImageUrl(imageUrl)
+                            .build();
+                } else {
+                    // Base product with no options
+                    orderItemResponse = OrderItemResponse.builder()
+                            .id(item.getId())
+                            .productId(product.getId())
+                            .productName(product.getName())
+                            .quantity(item.getQuantity())
+                            .itemPrice(item.getItemPrice())
+                            .totalPrice(item.getItemPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                            .productImageUrl(imageUrl)
+                            .build();
+                }
+                
+                orderItemResponses.add(orderItemResponse);
+            }
+            
+            // 6. Build and return the complete order response
+            return OrderResponse.builder()
+                    .orderId(order.getId())
+                    .orderDate(order.getOrderDate())
+                    .cancelDate(order.getCancelDate())
+                    .startDeliveryDate(order.getStartDeliveryDate())
+                    .receiveDate(order.getReceiveDate())
+                    .total(order.getTotal())
+                    .status(order.getStatus())
+                    .statusDetail(order.getStatusDetail())
+                    .refund(order.getRefund())
+                    .fullName(order.getFullName())
+                    .address(order.getAddress())
+                    .email(order.getEmail())
+                    .phone(order.getPhone())
+                    .paymentMethod(order.getPaymentMethod())
+                    .items(orderItemResponses)
+                    .build();
+            
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error getting order details: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
 }
