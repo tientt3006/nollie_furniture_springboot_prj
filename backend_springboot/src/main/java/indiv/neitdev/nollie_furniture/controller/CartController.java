@@ -51,4 +51,12 @@ public class CartController {
         var result = cartService.removeCartItem(cartItemId);
         return ApiResponse.<String>builder().result(result).build();
     }
+    
+    @DeleteMapping("/clear")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<String> clearCart() {
+        log.info("Clearing all items from cart");
+        var result = cartService.clearCart();
+        return ApiResponse.<String>builder().result(result).build();
+    }
 }

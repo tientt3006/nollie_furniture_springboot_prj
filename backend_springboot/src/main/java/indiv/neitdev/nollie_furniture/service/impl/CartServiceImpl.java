@@ -265,6 +265,50 @@ public class CartServiceImpl implements CartService {
         }
     }
 
+    @Override
+    @Transactional
+    public String clearCart() {
+        try {
+            // 1. Get current authenticated user from SecurityContext
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // 2. Find the user's cart
+            Optional<Cart> optionalCart = cartRepository.findByUser(user);
+            
+            // If cart doesn't exist or is already empty, just return success
+            if (optionalCart.isEmpty()) {
+                return "Cart is already empty";
+            }
+            
+            Cart cart = optionalCart.get();
+            
+            // 3. Get all cart items
+            List<CartItem> cartItems = cartItemRepository.findByCart(cart);
+            
+            // If no items, just return success
+            if (cartItems.isEmpty()) {
+                return "Cart is already empty";
+            }
+            
+            // 4. Delete all cart items
+            cartItemRepository.deleteAll(cartItems);
+            
+            // 5. Reset cart total to zero
+            cart.setTotal(BigDecimal.ZERO);
+            cartRepository.save(cart);
+            
+            return "All items removed from cart successfully";
+            
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error clearing cart: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
     private void addBaseProductToCart(Cart cart, Product product, Integer quantity) {
         // Validate quantity
         if (quantity <= 0) {

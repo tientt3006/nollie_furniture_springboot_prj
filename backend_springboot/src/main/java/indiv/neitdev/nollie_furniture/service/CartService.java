@@ -13,4 +13,7 @@ public interface CartService {
     String updateCartItemQuantity(Integer cartItemId, Integer quantity);
     
     String removeCartItem(Integer cartItemId);
+    
+    // New method to clear all items from a cart
+    String clearCart();
 }
