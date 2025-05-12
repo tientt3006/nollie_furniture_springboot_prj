@@ -2,8 +2,12 @@ package indiv.neitdev.nollie_furniture.service;
 
 import indiv.neitdev.nollie_furniture.dto.request.MakeOrderRequest;
 import indiv.neitdev.nollie_furniture.dto.response.OrderResponse;
+import indiv.neitdev.nollie_furniture.dto.response.OrderSummaryResponse;
 import indiv.neitdev.nollie_furniture.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -35,4 +39,24 @@ public interface OrderService {
      * @return message indicating success or warnings about items that couldn't be added
      */
     Map<String, Object> reorder(Integer orderId);
+    
+    /**
+     * Get all orders for the current authenticated user
+     * @return list of order summaries
+     */
+    List<OrderSummaryResponse> getAllUserOrders();
+    
+    /**
+     * Search orders with pagination and filtering
+     * @param pageable pagination information
+     * @param orderId optional order ID to search for
+     * @param startDate optional start date for filtering
+     * @param endDate optional end date for filtering
+     * @return page of order summaries matching the criteria
+     */
+    Page<OrderSummaryResponse> searchUserOrders(
+            Pageable pageable,
+            Integer orderId,
+            LocalDateTime startDate,
+            LocalDateTime endDate);
 }

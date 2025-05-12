@@ -3,6 +3,7 @@ package indiv.neitdev.nollie_furniture.service.impl;
 import indiv.neitdev.nollie_furniture.dto.request.MakeOrderRequest;
 import indiv.neitdev.nollie_furniture.dto.response.OrderItemResponse;
 import indiv.neitdev.nollie_furniture.dto.response.OrderResponse;
+import indiv.neitdev.nollie_furniture.dto.response.OrderSummaryResponse;
 import indiv.neitdev.nollie_furniture.entity.*;
 import indiv.neitdev.nollie_furniture.enums.OrderStatus;
 import indiv.neitdev.nollie_furniture.exception.AppException;
@@ -13,6 +14,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -464,5 +467,97 @@ public class OrderServiceImpl implements OrderService {
         // Update cart total
         cart.setTotal(cart.getTotal().add(totalItemPrice));
         cartRepository.save(cart);
+    }
+
+    @Override
+    public List<OrderSummaryResponse> getAllUserOrders() {
+        try {
+            // 1. Get current authenticated user
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // 2. Get all orders for user, sorted by date descending (newest first)
+            List<Order> userOrders = orderRepository.findByUserOrderByOrderDateDesc(user);
+            
+            // 3. Map orders to DTOs
+            List<OrderSummaryResponse> orderSummaries = new ArrayList<>();
+            
+            for (Order order : userOrders) {
+                orderSummaries.add(mapOrderToSummary(order));
+            }
+            
+            return orderSummaries;
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error retrieving user orders: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    public Page<OrderSummaryResponse> searchUserOrders(
+            Pageable pageable,
+            Integer orderId,
+            LocalDateTime startDate,
+            LocalDateTime endDate) {
+        try {
+            // 1. Get current authenticated user
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            
+            // 2. Search orders with filters
+            Page<Order> ordersPage = orderRepository.searchOrders(
+                    user, orderId, startDate, endDate, pageable);
+            
+            // 3. Map to DTOs
+            return ordersPage.map(this::mapOrderToSummary);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error searching user orders: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    /**
+     * Helper method to map an Order entity to OrderSummaryResponse
+     */
+    private OrderSummaryResponse mapOrderToSummary(Order order) {
+        // Get the number of items and a thumbnail image (if available)
+        Integer itemCount = 0;
+        String thumbnailUrl = null;
+        
+        List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
+        itemCount = orderItems.size();
+        
+        // Get the first product's image as thumbnail
+        if (!orderItems.isEmpty()) {
+            OrderItem firstItem = orderItems.get(0);
+            Product product = firstItem.getProduct();
+            
+            if (product != null) {
+                List<ProductImg> productImages = productImgRepository.findByProduct(product);
+                if (!productImages.isEmpty()) {
+                    thumbnailUrl = productImages.get(0).getImgUrl();
+                }
+            }
+        }
+        
+        return OrderSummaryResponse.builder()
+                .orderId(order.getId())
+                .orderDate(order.getOrderDate())
+                .total(order.getTotal())
+                .status(order.getStatus())
+                .statusDetail(order.getStatusDetail())
+                .fullName(order.getFullName())
+                .address(order.getAddress())
+                .phone(order.getPhone())
+                .paymentMethod(order.getPaymentMethod())
+                .itemCount(itemCount)
+                .thumbnailUrl(thumbnailUrl)
+                .build();
     }
 }
