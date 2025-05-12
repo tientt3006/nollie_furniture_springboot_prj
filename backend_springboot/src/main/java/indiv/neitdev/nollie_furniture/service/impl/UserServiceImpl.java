@@ -28,6 +28,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
@@ -148,4 +150,35 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public Page<UserResponse> searchUsers(
+            Pageable pageable,
+            Integer userId,
+            String searchTerm,
+            Boolean isActive) {
+        try {
+            log.info("Searching users with filters: userId={}, searchTerm={}, isActive={}", 
+                    userId, searchTerm, isActive);
+            
+            // Clean up search term if provided
+            String cleanSearchTerm = null;
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                cleanSearchTerm = searchTerm.trim();
+            }
+            
+            // Execute the search with filters
+            Page<User> usersPage = userRepository.searchUsers(
+                    userId, 
+                    cleanSearchTerm,
+                    isActive,
+                    pageable);
+            
+            // Map entities to DTOs
+            return usersPage.map(userMapper::toUserResponse);
+            
+        } catch (Exception e) {
+            log.error("Error searching users: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
 }
