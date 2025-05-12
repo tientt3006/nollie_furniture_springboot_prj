@@ -14,8 +14,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -947,5 +946,281 @@ public class ProductServiceImpl implements ProductService {
             log.error("Error converting Product to ProductResponse: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
+    }
+
+    @Override
+    public Page<Product> getProductPageForCustomer(
+            PageRequest pageRequest,
+            String search,
+            List<Integer> categories,
+            List<Integer> colors,
+            List<Integer> materials,
+            BigDecimal minPrice, BigDecimal maxPrice,
+            BigDecimal minHeight, BigDecimal maxHeight,
+            BigDecimal minWidth, BigDecimal maxWidth,
+            BigDecimal minLength, BigDecimal maxLength
+    ) {
+        log.info("Fetching products for customer with filters: search={}, categories={}, colors={}, materials={}, " +
+                "price=[{}-{}], height=[{}-{}], width=[{}-{}], length=[{}-{}]",
+                search, categories, colors, materials, minPrice, maxPrice, minHeight, maxHeight,
+                minWidth, maxWidth, minLength, maxLength);
+
+        // Apply default sorting if needed
+        if (pageRequest.getSort().isUnsorted()) {
+            pageRequest = PageRequest.of(
+                    pageRequest.getPageNumber(),
+                    pageRequest.getPageSize(),
+                    Sort.by(Sort.Direction.ASC, "id")
+            );
+        }
+
+        try {
+            // Input validation and sanitization
+            // Handle null collections
+            if (categories == null) categories = List.of();
+            if (colors == null) colors = List.of();
+            if (materials == null) materials = List.of();
+            
+            // Handle empty collections - pass null to the repository query when list is empty
+            // This helps the SQL query use the IS NULL condition properly
+            List<Integer> categoryParams = categories.isEmpty() ? null : categories;
+            List<Integer> colorParams = colors.isEmpty() ? null : colors;
+            List<Integer> materialParams = materials.isEmpty() ? null : materials;
+            
+            // Process search string for SQL LIKE operation if present
+            String searchTerm = null;
+            if (search != null && !search.trim().isEmpty()) {
+                searchTerm = "%" + search.trim() + "%";
+            }
+            
+            // Validate price ranges
+            if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
+                log.warn("Invalid price range: min > max, swapping values");
+                BigDecimal temp = minPrice;
+                minPrice = maxPrice;
+                maxPrice = temp;
+            }
+            
+            // Validate dimension ranges
+            if (minHeight != null && maxHeight != null && minHeight.compareTo(maxHeight) > 0) {
+                log.warn("Invalid height range: min > max, swapping values");
+                BigDecimal temp = minHeight;
+                minHeight = maxHeight;
+                maxHeight = temp;
+            }
+            
+            if (minWidth != null && maxWidth != null && minWidth.compareTo(maxWidth) > 0) {
+                log.warn("Invalid width range: min > max, swapping values");
+                BigDecimal temp = minWidth;
+                minWidth = maxWidth;
+                maxWidth = temp;
+            }
+            
+            if (minLength != null && maxLength != null && minLength.compareTo(maxLength) > 0) {
+                log.warn("Invalid length range: min > max, swapping values");
+                BigDecimal temp = minLength;
+                minLength = maxLength;
+                maxLength = temp;
+            }
+
+            // Check if we have multiple values for any of the list parameters
+            boolean hasMultipleCategories = categories.size() > 1;
+            boolean hasMultipleColors = colors.size() > 1;
+            boolean hasMultipleMaterials = materials.size() > 1;
+            
+            // If any list has multiple values, use the new approach
+            if (hasMultipleCategories || hasMultipleColors || hasMultipleMaterials) {
+                return getProductPageWithMultipleFilters(
+                    pageRequest, searchTerm,
+                    categories, colors, materials,
+                    minPrice, maxPrice,
+                    minHeight, maxHeight,
+                    minWidth, maxWidth,
+                    minLength, maxLength
+                );
+            } else {
+                // Original approach for single values or empty lists
+                return productRepository.findFilteredProducts(
+                    searchTerm,
+                    categoryParams,
+                    colorParams,
+                    materialParams,
+                    minPrice, maxPrice,
+                    minHeight, maxHeight,
+                    minWidth, maxWidth,
+                    minLength, maxLength,
+                    pageRequest
+                );
+            }
+        } catch (Exception e) {
+            log.error("Error while fetching products for customer: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    /**
+     * Handles product queries with multiple filter values by executing separate queries and combining results.
+     */
+    private Page<Product> getProductPageWithMultipleFilters(
+            PageRequest pageRequest,
+            String searchTerm,
+            List<Integer> categories,
+            List<Integer> colors,
+            List<Integer> materials,
+            BigDecimal minPrice, BigDecimal maxPrice,
+            BigDecimal minHeight, BigDecimal maxHeight,
+            BigDecimal minWidth, BigDecimal maxWidth,
+            BigDecimal minLength, BigDecimal maxLength
+    ) {
+        log.info("Using multi-query approach for multiple filter values");
+        
+        // Collect results from all combinations
+        List<Product> allProducts = new java.util.ArrayList<>();
+        java.util.Set<Integer> seenProductIds = new java.util.HashSet<>();
+        
+        // Start with empty categories if the list is empty
+        List<List<Integer>> categoryQueries = categories.isEmpty() ? 
+                List.of(null) : categories.stream().map(List::of).collect(Collectors.toList());
+        
+        // Start with empty colors if the list is empty
+        List<List<Integer>> colorQueries = colors.isEmpty() ?
+                List.of(null) : colors.stream().map(List::of).collect(Collectors.toList());
+        
+        // Start with empty materials if the list is empty
+        List<List<Integer>> materialQueries = materials.isEmpty() ?
+                List.of(null) : materials.stream().map(List::of).collect(Collectors.toList());
+        
+        // Count total matches for pagination
+        long totalElements = 0;
+        
+        // Create a large page request to get all possible results for filtering
+        // We'll handle pagination ourselves after collecting all results
+        PageRequest largePageRequest = PageRequest.of(0, Integer.MAX_VALUE, pageRequest.getSort());
+        
+        // Execute queries for all combinations of filters
+        for (List<Integer> categoryParam : categoryQueries) {
+            for (List<Integer> colorParam : colorQueries) {
+                for (List<Integer> materialParam : materialQueries) {
+                    // Skip if all params are null/empty (optimization)
+                    if (categoryParam == null && colorParam == null && materialParam == null &&
+                            !categories.isEmpty() && !colors.isEmpty() && !materials.isEmpty()) {
+                        continue;
+                    }
+                    
+                    // Execute query for this combination
+                    Page<Product> pageResult = productRepository.findFilteredProducts(
+                        searchTerm,
+                        categoryParam,
+                        colorParam,
+                        materialParam,
+                        minPrice, maxPrice,
+                        minHeight, maxHeight,
+                        minWidth, maxWidth,
+                        minLength, maxLength,
+                        largePageRequest
+                    );
+                    
+                    // Add unique products to our result list
+                    for (Product product : pageResult.getContent()) {
+                        if (!seenProductIds.contains(product.getId())) {
+                            seenProductIds.add(product.getId());
+                            allProducts.add(product);
+                        }
+                    }
+                    
+                    // Count total unique elements
+                    totalElements = seenProductIds.size();
+                }
+            }
+        }
+        
+        // Sort combined results according to the requested sort
+        if (pageRequest.getSort().isSorted()) {
+            java.util.Comparator<Product> comparator = createComparatorFromSort(pageRequest.getSort());
+            if (comparator != null) {
+                allProducts.sort(comparator);
+            }
+        }
+        
+        // Handle pagination manually
+        int start = (int) pageRequest.getOffset();
+        int end = Math.min((start + pageRequest.getPageSize()), allProducts.size());
+        
+        // Extract the requested page
+        List<Product> pageContent = start < end 
+            ? allProducts.subList(start, end) 
+            : new java.util.ArrayList<>();
+        
+        // Create a new Page object with our results
+        return new org.springframework.data.domain.PageImpl<>(
+            pageContent,
+            pageRequest,
+            totalElements
+        );
+    }
+
+    /**
+     * Creates a comparator from Spring Sort object to sort products.
+     */
+    private java.util.Comparator<Product> createComparatorFromSort(Sort sort) {
+        if (sort == null || !sort.iterator().hasNext()) {
+            return null;
+        }
+        
+        java.util.Comparator<Product> comparator = null;
+        
+        for (Sort.Order order : sort) {
+            java.util.Comparator<Product> propertyComparator = createPropertyComparator(order);
+            if (propertyComparator != null) {
+                if (comparator == null) {
+                    comparator = propertyComparator;
+                } else {
+                    comparator = comparator.thenComparing(propertyComparator);
+                }
+            }
+        }
+        
+        return comparator;
+    }
+
+    /**
+     * Creates a comparator for a specific property of Product.
+     */
+    private java.util.Comparator<Product> createPropertyComparator(Sort.Order order) {
+        String property = order.getProperty();
+        boolean isAscending = order.isAscending();
+        
+        java.util.Comparator<Product> comparator = null;
+        
+        switch (property) {
+            case "id":
+                comparator = java.util.Comparator.comparing(Product::getId);
+                break;
+            case "name":
+                comparator = java.util.Comparator.comparing(Product::getName, 
+                    java.util.Comparator.nullsLast(String::compareToIgnoreCase));
+                break;
+            case "basePrice":
+                comparator = java.util.Comparator.comparing(Product::getBasePrice, 
+                    java.util.Comparator.nullsLast(BigDecimal::compareTo));
+                break;
+            case "height":
+                comparator = java.util.Comparator.comparing(Product::getHeight, 
+                    java.util.Comparator.nullsLast(BigDecimal::compareTo));
+                break;
+            case "width":
+                comparator = java.util.Comparator.comparing(Product::getWidth, 
+                    java.util.Comparator.nullsLast(BigDecimal::compareTo));
+                break;
+            case "length":
+                comparator = java.util.Comparator.comparing(Product::getLength, 
+                    java.util.Comparator.nullsLast(BigDecimal::compareTo));
+                break;
+            default:
+                // Default to ID sorting if property is unknown
+                comparator = java.util.Comparator.comparing(Product::getId);
+        }
+        
+        return isAscending ? comparator : comparator.reversed();
     }
 }

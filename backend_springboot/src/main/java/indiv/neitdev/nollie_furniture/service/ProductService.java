@@ -4,8 +4,10 @@ import indiv.neitdev.nollie_furniture.dto.request.*;
 import indiv.neitdev.nollie_furniture.dto.response.ProductResponse;
 import indiv.neitdev.nollie_furniture.entity.Product;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ProductService {
@@ -95,4 +97,16 @@ public interface ProductService {
      * @return the product response DTO
      */
     ProductResponse toProductResponse(Product product);
+
+    Page<Product> getProductPageForCustomer(
+        PageRequest pageRequest,
+        String search,
+        List<Integer> categories,
+        List<Integer> colors,
+        List<Integer> materials,
+        BigDecimal minPrice, BigDecimal maxPrice,
+        BigDecimal minHeight, BigDecimal maxHeight,
+        BigDecimal minWidth, BigDecimal maxWidth,
+        BigDecimal minLength, BigDecimal maxLength
+    );
 }

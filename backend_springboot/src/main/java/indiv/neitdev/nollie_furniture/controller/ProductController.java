@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.internal.multipart.MpuRequestContext;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -156,4 +157,59 @@ public class ProductController {
                 .result(productResponses)
                 .build();
     }
+
+    @GetMapping("/page/customer")
+    public ApiResponse<CustomProductResponse> getPublicProducts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) List<Integer> categories,
+            @RequestParam(required = false) List<Integer> colors,
+            @RequestParam(required = false) List<Integer> materials,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) BigDecimal minHeight,
+            @RequestParam(required = false) BigDecimal maxHeight,
+            @RequestParam(required = false) BigDecimal minWidth,
+            @RequestParam(required = false) BigDecimal maxWidth,
+            @RequestParam(required = false) BigDecimal minLength,
+            @RequestParam(required = false) BigDecimal maxLength,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder
+    ) {
+        PageRequest pageRequest = PageRequest.of(
+                page - 1,
+                size,
+                Sort.by(sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy)
+        );
+
+        Page<Product> productPage = productService.getProductPageForCustomer(
+                pageRequest,
+                search,
+                categories,
+                colors,
+                materials,
+                minPrice, maxPrice,
+                minHeight, maxHeight,
+                minWidth, maxWidth,
+                minLength, maxLength
+        );
+
+        List<ProductResponse> productResponses = productPage.getContent().stream()
+                .map(productService::toProductResponse)
+                .toList();
+
+        CustomProductResponse response = CustomProductResponse.builder()
+                .currentPage(page)
+                .pageSize(size)
+                .totalItems(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .products(productResponses)
+                .build();
+
+        return ApiResponse.<CustomProductResponse>builder()
+                .result(response)
+                .build();
+    }
+
 }
