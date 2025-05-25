@@ -16,7 +16,7 @@
         <button class="close-btn" onclick="allSidebarOff()">&larr;</button>
         <ul>
             <li><a href="#" class="fur-menu">Furniture ></a></li>
-            <li><a href="#" class="collecion-menu">Collection ></a></li>
+            <li><a href="#" class="collecion-menu" style="visibility: hidden;">Collection ></a></li>
             <li><a href="#">About</a></li>
             <li><a href="#">Contact</a></li>
             <li><a href="#">Location</a></li>
@@ -81,7 +81,7 @@
                 <img src="../../images/menu.png" alt="Menu" class="menu-icon">
                 <nav class="nav-links">
                     <a href="../all_product/products.html">Furniture</a>
-                    <a href="../collection/collections.html">Collection</a>
+                    <a href="../collection/collections.html" style="visibility: hidden;">Collection</a>
                 </nav>
             </div>
             <div class="logo">
@@ -104,6 +104,7 @@
                         <!-- Options for logged-in users (hidden by default) -->
                         <a href="../io/userinfo.html" class="dropdown-item" id="info" style="display: none;">Info</a>
                         <a href="../home/home.html" class="dropdown-item" id="logout" style="display: none;">Logout</a>
+                        <a href="../io/ur_orders.html" class="dropdown-item" id="info" style="">Your Order</a>
                     </div>
                 </div>
             </div>
@@ -116,7 +117,7 @@
             <img src="../../images/userinfo-banner.png" alt="User" class="user-icon">
             <div class="header2">
                 <div>
-                    <h3 style="margin-top: 10px;">Well come!</h3>
+                    <h3 style="margin-top: 10px;">Well come! yourmail@gmail.com</h3>
                     <p>Change your info here</p>  
                 </div>
                 <div class="buttons">
@@ -170,13 +171,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="input-group">
+                <div class="input-group" style="visibility: hidden;">
                     <div>
                         <label>Email</label>
                         <input type="email" class="user-email" value="" disabled>
                     </div>
                 </div>
-                <div class="new-email-group">
+                <div class="new-email-group" style="visibility: hidden;">
                     <div>
                         <label>New Email</label>
                         <input type="email" id="new-email" placeholder="Enter new email" disabled>

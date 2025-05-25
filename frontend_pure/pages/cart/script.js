@@ -4,23 +4,23 @@ document.querySelectorAll('.remove').forEach(button => {
     });
   });
   
-  document.querySelector('.apply-discount').addEventListener('click', function() {
-    alert('Mã giảm giá chưa được áp dụng.');
-  });
+//   document.querySelector('.apply-discount').addEventListener('click', function() {
+//     alert('Mã giảm giá chưa được áp dụng.');
+//   });
   
 //   document.querySelector('.checkout').addEventListener('click', function() {
 //     alert('Đi đến thanh toán chưa được triển khai.');
 //   });
-  document.querySelector('.toggle-discount').addEventListener('click', function() {
-    let discountSection = document.querySelector('.discount');
-    if (discountSection.style.display === 'none') {
-      discountSection.style.display = 'flex';
-      this.innerHTML = '<div>Add discount code</div><div>▲</div>';
-    } else {
-      discountSection.style.display = 'none';
-      this.innerHTML = '<div>Add discount code</div><div>▼</div>';
-    }
-  });
+//   document.querySelector('.toggle-discount').addEventListener('click', function() {
+//     let discountSection = document.querySelector('.discount');
+//     if (discountSection.style.display === 'none') {
+//       discountSection.style.display = 'flex';
+//       this.innerHTML = '<div>Add discount code</div><div>▲</div>';
+//     } else {
+//       discountSection.style.display = 'none';
+//       this.innerHTML = '<div>Add discount code</div><div>▼</div>';
+//     }
+//   });
 //   ▲ ▼
 
 
@@ -48,12 +48,12 @@ furMenu.addEventListener("click", (event) => {
     document.getElementById('sidebar-care').classList.remove('show');
 });
 
-collectionMenu.addEventListener("click", (event) => {
-    event.preventDefault();
-    document.getElementById('sidebar-collection').classList.toggle('show');
-    document.getElementById('sidebar-fur').classList.remove('show');
-    document.getElementById('sidebar-care').classList.remove('show');
-});
+// collectionMenu.addEventListener("click", (event) => {
+//     event.preventDefault();
+//     document.getElementById('sidebar-collection').classList.toggle('show');
+//     document.getElementById('sidebar-fur').classList.remove('show');
+//     document.getElementById('sidebar-care').classList.remove('show');
+// });
 careMenu.addEventListener("click", (event) => {
     event.preventDefault();
     document.getElementById('sidebar-care').classList.toggle('show');

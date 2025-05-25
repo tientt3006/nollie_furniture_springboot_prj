@@ -23,6 +23,18 @@
             color: #000; /* Black text on hover */
             border: 1px solid #000; /* Black border on hover */
         }
+
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-container select,
+        .filter-container input {
+            padding: 5px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -64,15 +76,8 @@
             <div class="second-main-container">
                 <div class="sidebar">
                     <h3>Admin</h3>
-                    <a href="./dashboard.html">Dashboard</a>
-                    <a href="./product_management.html">All Products</a>
-                    <a href="./add_product.html">Add Product</a>
-                    <a href="./collection_management.html">All Collectins</a>
-                    <a href="./add_collection.html">Add Collecion</a>
-                    <a href="./option_management.html">All Options</a>
-                    <a href="./add_option.html">Add Option</a>
-                    <a href="./coupon_management.html">All Coupons</a>
-                    <a href="./add_coupon.html">Add Coupons</a>
+                    <a href="./product_management.html">Products</a>
+                    <a href="./option_management.html">Options</a>
                     <a href="./user_management.html">Users</a>
                     <a href="./order_list.html">Orders</a>
                     
@@ -81,10 +86,19 @@
                 <section class="container mt-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2>Product Stock</h2>
-                        <div>
-                            <button class="btn btn-dark">Add Product</button>
+                        <div class="filter-container">
+                            <a href="../admin/add_product.html"><button class="btn btn-dark">Add Product</button></a>
+                            
                             <input type="text" id="search-id-input" class="form-control d-inline-block w-auto" placeholder="Search by ID">
                             <input type="text" id="search-input" class="form-control d-inline-block w-auto" placeholder="Search product name">
+                            <select id="category-filter" class="form-control d-inline-block w-auto">
+                                <option value="">All Categories</option>
+                                <option value="Table">Table</option>
+                                <option value="Chair">Chair</option>
+                                <option value="Sofa">Sofa</option>
+                                <option value="Bed">Bed</option>
+                            </select>
+                            
                             <button id="search-button" class="btn btn-outline-secondary">Search</button>
                         </div>
                     </div>
@@ -98,7 +112,6 @@
                                 <th>Price</th>
                                 <th>Stock</th>
                                 <th>Option</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="product-table-body">
@@ -122,11 +135,19 @@
                     </table>
                     <div class="d-flex justify-content-between">
                         <span id="pagination-info">Showing 1-9 of 78</span>
+                        
                         <div>
                             <button id="prev-page" class="btn btn-outline-secondary">&lt;</button>
+                            <input type="number" id="page-input" class="form-control d-inline-block w-auto" placeholder="Page" min="1" style="width: 70px;">
                             <button id="next-page" class="btn btn-outline-secondary">&gt;</button>
                         </div>
                     </div>
+                    <span id="pagination-info">Page size</span>
+                    <select id="page-size" class="form-control d-inline-block w-auto">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
                 </section>
                 
                 <link href="styles.css" rel="stylesheet">
@@ -239,6 +260,17 @@
             if (currentPage * rowsPerPage < products.length) {
                 currentPage++;
                 renderProducts();
+            }
+        });
+
+        // Handle page input navigation
+        document.getElementById("page-input").addEventListener("change", function () {
+            const page = parseInt(this.value, 10);
+            if (page >= 1 && page <= Math.ceil(products.length / rowsPerPage)) {
+                currentPage = page;
+                renderProducts();
+            } else {
+                alert("Invalid page number");
             }
         });
 

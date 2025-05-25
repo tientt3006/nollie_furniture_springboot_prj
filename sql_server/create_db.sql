@@ -149,6 +149,9 @@ ADD CONSTRAINT chk_status CHECK (status IN ('ORDER_SUCCESSFUL', 'ON_DELIVERY', '
 
 ALTER TABLE orders
 ADD CONSTRAINT chk_refund CHECK (refund >= 0 AND refund <= 1);
+ALTER TABLE orders
+ALTER COLUMN refund DECIMAL(3, 2);  -- cho phép từ 0.00 đến 9.99 (hoặc hơn nữa)
+
 
 CREATE TABLE orders_item (
   id         INT IDENTITY NOT NULL, 

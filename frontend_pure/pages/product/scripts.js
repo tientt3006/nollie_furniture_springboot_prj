@@ -156,12 +156,12 @@ furMenu.addEventListener("click", (event) => {
     document.getElementById('sidebar-care').classList.remove('show');
 });
 
-collectionMenu.addEventListener("click", (event) => {
-    event.preventDefault();
-    document.getElementById('sidebar-collection').classList.toggle('show');
-    document.getElementById('sidebar-fur').classList.remove('show');
-    document.getElementById('sidebar-care').classList.remove('show');
-});
+// collectionMenu.addEventListener("click", (event) => {
+//     event.preventDefault();
+//     document.getElementById('sidebar-collection').classList.toggle('show');
+//     document.getElementById('sidebar-fur').classList.remove('show');
+//     document.getElementById('sidebar-care').classList.remove('show');
+// });
 careMenu.addEventListener("click", (event) => {
     event.preventDefault();
     document.getElementById('sidebar-care').classList.toggle('show');

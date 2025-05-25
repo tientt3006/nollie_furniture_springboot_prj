@@ -15,7 +15,7 @@
         <button class="close-btn" onclick="allSidebarOff()">&larr;</button>
         <ul>
             <li><a href="#" class="fur-menu">Furniture ></a></li>
-            <li><a href="#" class="collecion-menu">Collection ></a></li>
+            <li><a href="#" class="collecion-menu" style="visibility: hidden;">Collection ></a></li>
             <li><a href="#">About</a></li>
             <li><a href="#">Contact</a></li>
             <li><a href="#">Location</a></li>
@@ -80,7 +80,7 @@
                 <img src="../../images/menu.png" alt="Menu" class="menu-icon">
                 <nav class="nav-links">
                     <a href="../all_product/products.html">Furniture</a>
-                    <a href="../collection/collections.html">Collection</a>
+                    <a href="../collection/collections.html" style="visibility: hidden;">Collection</a>
                 </nav>
             </div>
             <div class="logo">
@@ -134,6 +134,7 @@
                                 <label for="order-status">Status</label>
                                 <input type="text" id="order-status" placeholder="Order Status">
                             </div>
+                            
                         </div>
                         <div class="filter-group2">
                             <div style="display: flex; flex-direction: column;">
@@ -162,7 +163,17 @@
                             <!-- Orders will be inserted here dynamically -->
                         </tbody>
                     </table>
-                    <button id="load-more" class="btn btn-dark" onclick="loadMoreOrders()">Show More</button>
+                    <div class="pagination">
+                        <label for="page-size">Page Size:</label>
+                        <select id="page-size" onchange="changePageSize(this.value)">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                        <button class="btn btn-dark" onclick="prevPage()">Previous</button>
+                        <span>Page <input type="number" id="current-page" value="1" min="1" onchange="goToPage(this.value)"> of <span id="total-pages">1</span></span>
+                        <button class="btn btn-dark" onclick="nextPage()">Next</button>
+                    </div>
                 </div>
             </section>
             
@@ -250,11 +261,18 @@
     { id: 58, date: "2025-03-24", quantity: 50, total: 49999.99, payment: "Credit Card", status: "Pending" },
 ];
 
+let currentPage = 1;
+let itemsPerPage = 5;
+
 function renderOrders() {
-    let tbody = document.getElementById("order-list");
+    const tbody = document.getElementById("order-list");
     tbody.innerHTML = "";
-    orders.forEach(order => {
-        let row = `<tr>
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedOrders = orders.slice(start, end);
+
+    paginatedOrders.forEach(order => {
+        const row = `<tr>
             <td>${order.id}</td>
             <td>${order.date}</td>
             <td>${order.quantity}</td>
@@ -265,7 +283,35 @@ function renderOrders() {
         </tr>`;
         tbody.innerHTML += row;
     });
+
+    document.getElementById("current-page").value = currentPage;
+    document.getElementById("total-pages").textContent = Math.ceil(orders.length / itemsPerPage);
 }
+
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderOrders();
+    }
+}
+
+function nextPage() {
+    if (currentPage < Math.ceil(orders.length / itemsPerPage)) {
+        currentPage++;
+        renderOrders();
+    }
+}
+
+function goToPage(page) {
+    const totalPages = Math.ceil(orders.length / itemsPerPage);
+    if (page >= 1 && page <= totalPages) {
+        currentPage = parseInt(page, 10);
+        renderOrders();
+    } else {
+        alert("Invalid page number");
+    }
+}
+
 function applyFilters() {
     console.log("Applying filters...");
 }
@@ -279,10 +325,44 @@ function clearFilters() {
 function loadMoreOrders() {
     console.log("Loading more orders...");
 }
+function changePageSize(size) {
+    itemsPerPage = parseInt(size, 10);
+    currentPage = 1; // Reset to the first page
+    renderOrders();
+}
 document.addEventListener("DOMContentLoaded", function () {
     renderOrders();
 });
     </script>
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination input {
+            width: 50px;
+            text-align: center;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .pagination button {
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            background: black;
+            color: white;
+        }
+
+        .pagination button:hover {
+            background: #333;
+        }
+    </style>
     <script src="script.js"></script>
 </body>
 

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products all</title>
+    <link rel="stylesheet" href="products.css">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+
+<body>
+    <div id="sidebar" class="sidebar">
+        <button class="close-btn" onclick="allSidebarOff()">&larr;</button>
+        <ul>
+            <li><a href="#" class="fur-menu">Furniture ></a></li>
+            <li><a href="#" class="collecion-menu">Collection ></a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Location</a></li>
+            <li><a href="#" class="care-menu">Customer Service ></a></li>
+            <li><a href="#">Interior Design Service</a></li>
+        </ul>
+    </div>
+    <div id="menu-overlay" class="menu-overlay" onclick="allSidebarOff()"></div>
+    <div id="sidebar-fur" class="sidebar-fur">
+        <p>Furnitures</p>
+        <ul>
+            <li><a href="../all_product/products.html">Sofas</a></li>
+            <li><a href="../all_product/products.html">Chairs</a></li>
+            <li><a href="../all_product/products.html#">Table</a></li>
+            <li><a href="../all_product/products.html#">Storages</a></li>
+            <li><a href="../all_product/products.html#">Lamp</a></li>
+            <li><a href="../all_product/products.html#">Rugs</a></li>
+            <li><a href="../all_product/products.html#">Beds</a></li>
+        </ul>
+    </div>
+    <div id="sidebar-collection" class="sidebar-collection">
+        <p>Collections</p>
+        <ul>
+            <li><a href="../collection/collections.html">Living Room</a></li>
+            <li><a href="../collection/collections.html#">Bedroom</a></li>
+            <li><a href="../collection/collections.html#">Kitchen</a></li>
+            <li><a href="../collection/collections.html#">OutDoor</a></li>
+            <li><a href="../collection/collections.html#">Dining Room</a></li>
+            <li><a href="../collection/collections.html#">Lounge</a></li>
+            <li><a href="../collection/collections.html#">-</a></li>
+        </ul>
+    </div>
+    <div id="sidebar-care" class="sidebar-care">
+        <p>Customer Care</p>
+        <ul>
+            <li><a href="#">Delivery</a></li>
+            <li><a href="#">Product Care</a></li>
+            <li><a href="#">Assambly Instruction</a></li>
+            <li><a href="#">Warranty</a></li>
+            <li><a href="#">Legal</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">-</a></li>
+        </ul>
+    </div>
+
+    <div id="search-popup" class="search-popup">
+        <button class="close-search-btn" onclick="CloseSearchPopup()">X</button>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search for products..." />
+            <button id="search-btn" onclick="performSearch()">Search</button>
+        </div>
+        <div class="search-results">
+            <ul id="search-results-list">
+                <!-- Search results will be dynamically inserted here -->
+            </ul>
+            <button id="show-all-results-btn" onclick="showAllResults()">Show all results</button>
+        </div>
+    </div>
+
+
+    <div id="sidebar-sort" class="sidebar-sort">
+        <button class="close-btn-sort" onclick="allSidebarFilterOff()">&larr;</button>
+        <ul>
+            <li>
+                <input type="radio" id="popular-sort" name="sort-option" value="popular-sort">
+                <label for="popular-sort">Popular</label>
+            </li>
+            <li>
+                <input type="radio" id="price-htl" name="sort-option" value="price-htl">
+                <label for="price-htl">Price (High to Low)</label>
+            </li>
+            <li>
+                <input type="radio" id="price-lth" name="sort-option" value="price-lth">
+                <label for="price-lth">Price (Low to High)</label>
+            </li>
+            <li>
+                <input type="radio" id="name-htl" name="sort-option" value="name-htl">
+                <label for="name-htl">Alphabet (High to Low)</label>
+            </li>
+            <li>
+                <input type="radio" id="name-lth" name="sort-option" value="name-lth">
+                <label for="name-lth">Alphabet (Low to High)</label>
+            </li>
+        </ul>
+        <div class="sort-actions">
+            <button id="sort-show">Show</button>
+        </div>
+    </div>
+
+    <div id="sidebar-filter" class="sidebar-filter">
+        <button class="close-btn-filter" onclick="allSidebarFilterOff()">&larr;</button>
+        <ul>
+            <li><a href="#" class="color-filter">Color </a></li>
+            <li><a href="#" class="material-filter">Material </a></li>
+            <li><a href="#" class="caterogy-filter">Catergory</a></li>
+            <li><a href="#" class="price-filter">Price</a></li>
+            <li><a href="#" class="dimension-filter">Dimension</a></li>
+        </ul>
+        <div class="filter-actions">
+            <button id="filter-show">Show</button>
+            <button id="filter-reset">Reset</button>
+        </div>
+    </div>
+    <div id="menu-overlay-filter" class="menu-overlay-filter" onclick="allSidebarFilterOff()"></div>
+    <div id="sidebar-color" class="sidebar-color">
+        <p>Color</p>
+        <ul>
+            <li><input type="checkbox" id="color-red" value="Red"><label for="color-red"><span class="color-circle" style="background-color: red;"></span> Red</label></li>
+            <li><input type="checkbox" id="color-white" value="White"><label for="color-white"><span class="color-circle" style="background-color: white; border: 1px solid #ccc;"></span> White</label></li>
+            <li><input type="checkbox" id="color-black" value="Black"><label for="color-black"><span class="color-circle" style="background-color: black;"></span> Black</label></li>
+
+        </ul>
+    </div>
+    <div id="sidebar-material" class="sidebar-material">
+        <p>Material</p>
+        <ul>
+            <li><input type="checkbox" id="material-fabric" value="Fabric"><label for="material-fabric"> Fabric</label></li>
+            <li><input type="checkbox" id="material-lacquered" value="Lacquered"><label for="material-lacquered"> Lacquered</label></li>
+            <li><input type="checkbox" id="material-metal" value="Metal"><label for="material-metal"> Metal</label></li>
+            <li><input type="checkbox" id="material-wood" value="Wood"><label for="material-wood"> Wood</label></li>
+            <li><input type="checkbox" id="material-oak" value="Oak"><label for="material-oak"> Oak</label></li>
+            <li><input type="checkbox" id="material-aluminium" value="Aluminium"><label for="material-aluminium"> Aluminium</label></li>
+            <li><input type="checkbox" id="material-leather" value="Leather"><label for="material-leather"> Leather</label></li>
+        </ul>
+    </div>
+    <div id="sidebar-category" class="sidebar-category">
+        <p>Category</p>
+        <ul>
+            <li><input type="checkbox" id="category-sofas" value="Sofas"><label for="category-sofas"> Sofas</label></li>
+            <li><input type="checkbox" id="category-chairs" value="Chairs"><label for="category-chairs"> Chairs</label></li>
+            <li><input type="checkbox" id="category-table" value="Table"><label for="category-table"> Table</label></li>
+            <li><input type="checkbox" id="category-storages" value="Storages"><label for="category-storages"> Storages</label></li>
+            <li><input type="checkbox" id="category-lamp" value="Lamp"><label for="category-lamp"> Lamp</label></li>
+            <li><input type="checkbox" id="category-rugs" value="Rugs"><label for="category-rugs"> Rugs</label></li>
+            <li><input type="checkbox" id="category-beds" value="Beds"><label for="category-beds"> Beds</label></li>
+        </ul>
+    </div>
+    <div id="sidebar-price" class="sidebar-price">
+        <p>Price</p>
+        <br>
+        <div class="slider-container">
+            <label for="price-min">Min Price</label>
+            <input type="number" id="price-min-input" min="0" max="100000" step="1000">
+            <input type="range" id="price-min" min="0" max="100000" step="1000">
+            <br>
+            <br>
+            <label for="price-max">Max Price</label>
+            <input type="number" id="price-max-input" min="0" max="100000" step="1000">
+            <input type="range" id="price-max" min="0" max="100000" step="1000">
+        </div>
+    </div>
+    <div id="sidebar-dimension" class="sidebar-dimension">
+        <p>Dimension</p>
+        <br>
+        <div class="slider-container">
+            <label>Height:</label>
+            <br>
+            <div>
+                <label for="dimension-height-min">Min</label>
+                <input type="number" id="dimension-height-min-input" min="0" max="300" step="1">
+                <input type="range" id="dimension-height-min" min="0" max="300" step="1">
+            </div>
+            <div>
+                <label for="dimension-height-max">Max</label>
+                <input type="number" id="dimension-height-max-input" min="0" max="300" step="1">
+                <input type="range" id="dimension-height-max" min="0" max="300" step="1">
+            </div>
+
+            <br>
+            <label>Length:</label>
+            <br>
+            <div>
+                <label for="dimension-length-min">Min</label>
+                <input type="number" id="dimension-length-min-input" min="0" max="300" step="1">
+                <input type="range" id="dimension-length-min" min="0" max="300" step="1">
+            </div>
+            <div>
+                <label for="dimension-length-max">Max</label>
+                <input type="number" id="dimension-length-max-input" min="0" max="300" step="1">
+                <input type="range" id="dimension-length-max" min="0" max="300" step="1">
+            </div>
+
+            <br>
+            <label>Width:</label>
+            <br>
+            <div>
+                <label for="dimension-width-min">Min</label>
+                <input type="number" id="dimension-width-min-input" min="0" max="300" step="1">
+                <input type="range" id="dimension-width-min" min="0" max="300" step="1">
+            </div>
+            <div>
+                <label for="dimension-width-max">Max</label>
+                <input type="number" id="dimension-width-max-input" min="0" max="300" step="1">
+                <input type="range" id="dimension-width-max" min="0" max="300" step="1">
+            </div>
+        </div>
+    </div>
+    <div class="wrapper">
+    <header class="header">
+            <div class="nav-left">
+                <img src="../../images/menu.png" alt="Menu" class="menu-icon">
+                <nav class="nav-links">
+                    <a href="../all_product/products.html">Furniture</a>
+                    <a href="../collection/collections.html">Collection</a>
+                </nav>
+            </div>
+            <div class="logo">
+                <a href="../home/home.html" class="logo-link" style="display: flex; text-decoration: none;">
+                <img src="../../images/logoonly.png" alt="Logo">
+                <p class="logo-name">NollieConcept</p>
+                </a>
+            </div>
+            <div class="nav-right nav-icons">
+                <img src="../../images/search.png" alt="Search" class="icon">
+                <a href="../cart/cart.html" class="icon">
+                <img src="../../images/shopping-cart.png" alt="Cart" class="icon">
+                </a>
+                <div class="user-dropdown">
+                    <img src="../../images/user.png" alt="User" class="icon user-icon">
+                    <div class="dropdown-menu">
+                        <!-- Default options for logged-out users -->
+                        <a href="../io/signin.html" class="dropdown-item" id="signin">Sign In</a>
+                        <a href="../io/signup.html" class="dropdown-item" id="signup">Sign Up</a>
+                        <!-- Options for logged-in users (hidden by default) -->
+                        <a href="../io/userinfo.html" class="dropdown-item" id="info" style="display: none;">Info</a>
+                        <a href="../home/home.html" class="dropdown-item" id="logout" style="display: none;">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+    <div class="main-container">
+
+        <section class="product-section">
+            <div class="section-header">
+                <h2>Design Furniture</h2>
+                <p>From all our greatest designer</a>
+            </div>
+            <div class="filters">
+                <button class="filter-btn all-filters">All filters</button>
+                <button class="filter-btn color-filters">Colour</button>
+                <button class="filter-btn material-filters">Material</button>
+                <button class="filter-btn category-filters">Category</button>
+                <div class="sort-right-container">
+                    <span class="item-count" style="margin-right: 10px;">  <button class="filter-btn sort-btn">Sort</button></span>
+                    
+                </div>
+                
+            </div>
+            <div class="product-list" id="productList">
+                <!-- Các sản phẩm sẽ được thêm vào đây bằng JS -->
+            </div>
+            <div class="load-more-container">
+                <p id="showingCount">Showing 15 of 399 products</p>
+                <button id="loadMore" class="load-more-btn">Load more products</button>
+            </div>
+        </section>
+            
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="text-center text-lg-start text-black" style="background-color: #ffffff; border-top: 1px solid #262626;">
+        <hr style="border: 1px solid #262626; margin: 0;">
+        <br />
+        <!-- Section: Links  -->
+        <section class="">
+            <div class="container text-center text-md-start mt-5">
+                <!-- Grid row -->
+                <div class="row mt-3">
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
+                        <!-- Content -->
+                        
+                        <h6 class="text-uppercase fw-bold" style="display: flex; align-items: center; gap: 10px; font-size: 24px;">
+                            <img src="../../images/logo2.png" alt="Logo" style="width: 50px; height: auto;"> 
+                            <span style="font-size: 24px;">Nollie</span>
+                        </h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: calc( 24px * 5); background-color: #ffffff; height: 2px" />
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipisicing
+                            elit.
+                        </p>
+                        <p>© 2025 Copyright: Nollie</p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold">Category</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #ffffff; height: 2px" />
+                        <p>
+                            <a href="#!" class="text-black">Sofa</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Armchair</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Table</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Storage</a>
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold">Support</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #ffffff; height: 2px" />
+                        <p>
+                            <a href="#!" class="text-black">Help & Support</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Tearms & Conditions</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Privacy Policy</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-black">Help</a>
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold">Contact</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #ffffff; height: 2px" />
+                        <p><i class="fas fa-home mr-3"></i> Ha Noi, HN 10000, VI</p>
+                        <p><i class="fas fa-envelope mr-3"></i> info@gmail.com</p>
+                        <p><i class="fas fa-phone mr-3"></i> 0123.456.789</p>
+                        <p><i class="fas fa-print mr-3"></i> 0123.456.789</p>
+                    </div>
+                    <!-- Grid column -->
+                </div>
+                <!-- Grid row -->
+            </div>
+        </section>
+        
+
+
+    </footer>
+    <!-- Footer -->
+    </div>
+
+    <script src="products.js"></script>
+</body>
+
+</html>
