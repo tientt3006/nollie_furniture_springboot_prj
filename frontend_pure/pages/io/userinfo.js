@@ -236,6 +236,7 @@ async function fetchUserInfo() {
         if (data.code === 1000) {
             const userInfo = data.result;
             document.querySelector(".user-fullname").value = userInfo.fullName;
+            document.querySelector(".user-email-header").textContent = userInfo.email;
             document.querySelector(".user-email").value = userInfo.email;
             document.querySelector(".user-phone").value = userInfo.phone;
             document.querySelector(".user-address").value = userInfo.address;

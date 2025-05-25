@@ -104,7 +104,7 @@
                         <!-- Options for logged-in users (hidden by default) -->
                         <a href="../io/userinfo.html" class="dropdown-item" id="info" style="display: none;">Info</a>
                         <a href="../home/home.html" class="dropdown-item" id="logout" style="display: none;">Logout</a>
-                        <a href="../io/ur_orders.html" class="dropdown-item" id="info" style="">Your Order</a>
+                        <a href="../io/ur_orders.html" class="dropdown-item" id="info">Your Order</a>
                     </div>
                 </div>
             </div>
@@ -117,8 +117,12 @@
             <img src="../../images/userinfo-banner.png" alt="User" class="user-icon">
             <div class="header2">
                 <div>
-                    <h3 style="margin-top: 10px;">Well come! yourmail@gmail.com</h3>
-                    <p>Change your info here</p>  
+                    <div style="display: flex; align-items: center; margin-top: 10px;">
+                        <h3 style="margin: 0;">Well come!</h3>
+                        <h3 class="user-email-header" style="margin: 0 0 0 10px;"></h3>
+                    </div>
+
+                    <p>Change your info here, leave password fields empty to keep current password</p>  
                 </div>
                 <div class="buttons">
                     <button onclick="toggleEdit()">Edit</button>

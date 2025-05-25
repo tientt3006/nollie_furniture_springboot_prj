@@ -36,7 +36,7 @@ async function checkTokenAndRedirect() {
 
         if (introspectData.code === 1000 && introspectData.result.valid) {
             // Token is valid, redirect to the previous page or user info page
-            window.location.href = previousPage || "../io/userinfo.html";
+            window.location.href = "../io/userinfo.html";
             return;
         }
 
@@ -54,7 +54,7 @@ async function checkTokenAndRedirect() {
         if (refreshData.code === 1000 && refreshData.result.authenticated) {
             // Refresh successful, save new token and redirect
             localStorage.setItem("authToken", refreshData.result.token);
-            window.location.href = previousPage || "../io/userinfo.html";
+            window.location.href = "../io/userinfo.html" ;
         } else {
             // Refresh failed, stay on login page
             localStorage.removeItem("authToken");
@@ -95,7 +95,7 @@ async function handleLogin(event) {
         if (data.code === 1000 && data.result.authenticated) {
             localStorage.setItem("authToken", data.result.token);
             console.log("Auth Token:", data.result.token); // Log the token to the console
-            window.location.href = previousPage || "../io/userinfo.html"; // Redirect to the previous page or user info page
+            window.location.href = "../io/userinfo.html"; // Redirect to the previous page or user info page
         } else if (data.code === 1014 && data.message === "Account not active") { 
             if (errorMessageElement) {
                 errorMessageElement.textContent = "Account not acctivated.";
