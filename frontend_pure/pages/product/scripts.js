@@ -619,28 +619,89 @@ function CloseSearchPopup() {
     searchResultsList.innerHTML = "";
 }
 
-function performSearch() {
+async function performSearch() {
     const query = searchInput.value.trim();
     if (!query) return;
 
-    // Simulate search results (replace with actual search logic)
-    const results = Array.from({ length: 15 }, (_, i) => `Product ${i + 1}`);
-    searchResultsList.innerHTML = results
-        .slice(0, 10)
-        .map(result => `<li>${result}</li>`)
-        .join("");
-
-    if (results.length > 10) {
-        document.getElementById("show-all-results-btn").style.display = "block";
-    } else {
-        document.getElementById("show-all-results-btn").style.display = "none";
+    try {
+        // API configuration
+        const API_BASE_URL = 'http://localhost:8080/api';
+        // Show loading state
+        searchResultsList.innerHTML = '<li style="text-align: center; padding: 20px;">Searching...</li>';
+        
+        // Call API with search parameter
+        const response = await fetch(`${API_BASE_URL}/product/page/customer?page=1&size=10&search=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.code === 1000 && data.result && data.result.products) {
+            displaySearchResults(data.result.products);
+        } else {
+            searchResultsList.innerHTML = '<li style="text-align: center; padding: 20px; color: #666;">No products found</li>';
+        }
+    } catch (error) {
+        console.error('Search error:', error);
+        searchResultsList.innerHTML = '<li style="text-align: center; padding: 20px; color: #dc3545;">Error occurred while searching</li>';
     }
 }
 
-function showAllResults() {
-    alert("Redirecting to all results page...");
-    // Implement redirection logic here
+function displaySearchResults(products) {
+    if (!products || products.length === 0) {
+        searchResultsList.innerHTML = '<li style="text-align: center; padding: 20px; color: #666;">No products found</li>';
+        return;
+    }
+    
+    searchResultsList.innerHTML = '';
+    
+    products.forEach(product => {
+        // Get base image URL
+        let baseImageUrl = '../../images/placeholder.png';
+        if (product.baseImageUrl) {
+            const imageId = Object.keys(product.baseImageUrl)[0];
+            baseImageUrl = product.baseImageUrl[imageId];
+        }
+        
+        // Format price
+        const formattedPrice = new Intl.NumberFormat('vi-VN').format(product.basePrice) + ' đ';
+        
+        // Create search result item
+        const li = document.createElement('li');
+        li.style.cssText = 'padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 15px;';
+        li.innerHTML = `
+            <img src="${baseImageUrl}" alt="${product.name}" 
+                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;"
+                 onerror="this.src='../../images/placeholder.png'">
+            <div style="flex: 1;">
+                <h4 style="margin: 0 0 5px 0; font-size: 16px; font-weight: 600;">${product.name}</h4>
+                <p style="margin: 0; color: #666; font-size: 14px;">${product.category ? product.category.name : ''}</p>
+                <p style="margin: 5px 0 0 0; font-weight: bold; color: #000;">${formattedPrice}</p>
+            </div>
+        `;
+        
+        // Add click handler to navigate to product page
+        li.addEventListener('click', () => {
+            window.location.href = `../product/product.html?id=${product.productId}`;
+        });
+        
+        // Add hover effect
+        li.addEventListener('mouseenter', () => {
+            li.style.backgroundColor = '#f5f5f5';
+        });
+        li.addEventListener('mouseleave', () => {
+            li.style.backgroundColor = 'transparent';
+        });
+        
+        searchResultsList.appendChild(li);
+    });
 }
+
+// Add Enter key support for search input in the main search functionality
+searchInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        performSearch();
+        // Don't close popup - let user see results
+    }
+});
+
 
 // Add to cart functionality
 document.querySelector('.add-to-cart').addEventListener('click', function () {
