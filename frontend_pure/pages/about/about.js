@@ -52,11 +52,10 @@ const signupItem = document.getElementById("signup");
 const infoItem = document.getElementById("info");
 const logoutItem = document.getElementById("logout");
 
-// Simulate login state (replace with actual logic)
-let isLoggedIn = false;
-
+// Update dropdown menu based on login state
 function updateDropdownMenu() {
-    if (isLoggedIn) {
+    const token = localStorage.getItem("authToken");
+    if (token) {
         signinItem.style.display = "none";
         signupItem.style.display = "none";
         infoItem.style.display = "block";
@@ -72,18 +71,31 @@ function updateDropdownMenu() {
 // Update dropdown menu on page load
 updateDropdownMenu();
 
-// Example: Toggle login state on logout click
-logoutItem.addEventListener("click", (event) => {
+// Logout functionality
+logoutItem.addEventListener("click", async (event) => {
     event.preventDefault();
-    isLoggedIn = false;
-    updateDropdownMenu();
-});
-
-// Example: Simulate login on sign-in click
-signinItem.addEventListener("click", (event) => {
-    event.preventDefault();
-    isLoggedIn = true;
-    updateDropdownMenu();
+    const token = localStorage.getItem("authToken");
+    if (token) {
+        try {
+            const response = await fetch("http://127.0.0.1:8080/api/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ token }),
+            });
+            const data = await response.json();
+            if (data.code === 1000) {
+                localStorage.removeItem("authToken");
+                updateDropdownMenu();
+                window.location.href = "../io/signin.html";
+            } else {
+                console.error("Failed to logout: Invalid response code");
+            }
+        } catch (error) {
+            console.error("Failed to logout:", error);
+        }
+    }
 });
 
 userIcon.addEventListener("click", (event) => {
