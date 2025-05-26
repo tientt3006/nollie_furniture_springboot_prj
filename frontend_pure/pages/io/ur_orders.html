@@ -128,13 +128,22 @@
                             </div>
                             <div style="display: flex; flex-direction: column;">
                                 <label for="payment-method">Payment method</label>
-                                <input type="text" id="payment-method" placeholder="Payment Method">
+                                <select id="payment-method">
+                                    <option value="">All Payment Methods</option>
+                                    <option value="CASH_ON_DELIVERY">COD</option>
+                                    <option value="BANK_TRANSFER">Bank Transfer</option>
+                                </select>
                             </div>
                             <div style="display: flex; flex-direction: column;">
                                 <label for="order-status">Status</label>
-                                <input type="text" id="order-status" placeholder="Order Status">
+                                <select id="order-status">
+                                    <option value="">All Status</option>
+                                    <option value="ORDER_SUCCESSFUL">Order Success</option>
+                                    <option value="ON_DELIVERY">On Delivery</option>
+                                    <option value="RECEIVED">Received</option>
+                                    <option value="CANCELED">Canceled</option>
+                                </select>
                             </div>
-                            
                         </div>
                         <div class="filter-group2">
                             <div style="display: flex; flex-direction: column;">
@@ -142,7 +151,7 @@
                                 <button class="btn btn-dark" onclick="applyFilters()">Apply</button>
                             </div>
                             <div style="display: flex; flex-direction: column;">
-                                <label style="visibility: hidden;">Apply</label>
+                                <label style="visibility: hidden;">Clear</label>
                                 <button class="btn btn-light" onclick="clearFilters()">Clear</button>
                             </div>
                         </div>
@@ -156,7 +165,7 @@
                                 <th>Total</th>
                                 <th>Payment</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th style="width: 250px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="order-list">
@@ -168,11 +177,11 @@
                         <select id="page-size" onchange="changePageSize(this.value)">
                             <option value="10">10</option>
                             <option value="20">20</option>
-                            <option value="50">50</option>
+                            <option value="30">30</option>
                         </select>
-                        <button class="btn btn-dark" onclick="prevPage()">Previous</button>
+                        <button class="btn btn-dark" onclick="prevPage()" id="prev-btn">Previous</button>
                         <span>Page <input type="number" id="current-page" value="1" min="1" onchange="goToPage(this.value)"> of <span id="total-pages">1</span></span>
-                        <button class="btn btn-dark" onclick="nextPage()">Next</button>
+                        <button class="btn btn-dark" onclick="nextPage()" id="next-btn">Next</button>
                     </div>
                 </div>
             </section>
@@ -364,6 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     </style>
     <script src="script.js"></script>
+    <script src="ur_order.js"></script>
 </body>
 
 </html>

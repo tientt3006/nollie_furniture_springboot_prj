@@ -910,13 +910,85 @@ body {
     border: 1px solid #ccc !important;
 }
 
-.loading-state {
+/* ur order specific styles */
+.filters select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    flex: 1;
+    min-width: auto;
+    background-color: white;
+    font-size: 14px;
+}
+
+.filters select:focus {
+    outline: none;
+    border-color: #000;
+}
+
+.pagination button:disabled {
+    background: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed !important;
+}
+
+.order-table td button {
+    margin-right: 5px;
+    font-size: 12px;
+    padding: 3px 8px;
+}
+
+.order-table td button:first-child {
+    background: #007bff;
+}
+
+.order-table td button:first-child:hover {
+    background: #0056b3;
+}
+
+.order-table td button:last-child {
+    background: #28a745;
+}
+
+.order-table td button:last-child:hover {
+    background: #1e7e34;
+}
+
+/* Cancel button styles */
+.order-table td button[onclick*="cancelOrder"] {
+    background: #dc3545 !important;
+    color: white !important;
+    border: 1px solid #dc3545 !important;
+}
+
+.order-table td button[onclick*="cancelOrder"]:hover {
+    background: #c82333 !important;
+    border: 1px solid #c82333 !important;
+}
+
+.order-table td button[onclick*="cancelOrder"]:disabled {
+    background: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed !important;
+    border: 1px solid #ccc !important;
+}
+
+/* Loading state */
+.loading-orders {
     text-align: center;
     padding: 50px;
     color: #666;
 }
 
-.error-state {
+/* Empty state */
+.empty-orders {
+    text-align: center;
+    padding: 50px;
+    color: #999;
+}
+
+/* Error state */
+.error-orders {
     text-align: center;
     padding: 50px;
     color: #e74c3c;
