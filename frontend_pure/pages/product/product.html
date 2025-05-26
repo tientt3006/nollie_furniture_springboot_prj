@@ -124,16 +124,31 @@
             <div class="product-info">
               <h1>Hamilton</h1>
               <p class="subtitle">Hamilton dining chair</p>
-              <div class="options">
-                <p> Choose your design</p>
-                <button class="option-btn" data-option="color">Color: Black <span>Change ></span></button>
-                <button class="option-btn" data-option="material">Material: Fabric <span>Change ></span></button>
-                <button class="option-btn" data-option="dimension">Dimension: 60×60×100 <span>Change ></span></button>
+              <div id="product-options">
+                <p>Choose your design</p>
+                <!-- Option selectors will be dynamically generated here -->
               </div>
+              
+              <!-- Add quantity selector -->
+              <div class="quantity-container">
+                <label for="quantity-input">Quantity:</label>
+                <div class="quantity-controls">
+                  <button type="button" id="decrease-quantity">-</button>
+                  <input type="number" id="quantity-input" value="1" min="1" max="10">
+                  <button type="button" id="increase-quantity">+</button>
+                </div>
+              </div>
+              
+              <!-- Add dimension display -->
+              <div class="option-btn" data-option="dimension" style="visibility: hidden;">
+                Dimension: Loading... <span>Change ></span>
+              </div>
+              
+              <p class="stock-info">In stock</p>
               <p class="price">4,890,000 đ</p>
-              <button class="add-to-cart">Add to cart</button>
+              <button class="add-to-cart" disabled>Add to cart</button>
               <p class="delivery-info">Expected delivery 6-7 weeks</p>
-                <p class="description">Quality takes time – most of our furniture is made to order and thoughtfully crafted just for you.</p>
+              <p class="description">Quality takes time – most of our furniture is made to order and thoughtfully crafted just for you.</p>
             </div>
           </section>
           
