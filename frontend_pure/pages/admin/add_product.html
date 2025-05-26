@@ -9,7 +9,85 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="admin.css">
     <style>
+        .option-container {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
         
+        .option-value-container {
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        
+        .btn-remove {
+            color: #dc3545;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .preview-image {
+            max-width: 100px;
+            max-height: 100px;
+            margin: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        /* Product Details Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1050;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .product-image {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
@@ -60,96 +138,130 @@
 
                 <section>
                     <div class="container mt-4">
-                        <h2>Add New Product</h2>
-                        <form action="#" method="POST" enctype="multipart/form-data">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="productImages" class="form-label">Upload Images</label>
-                                    <input type="file" class="form-control" id="productImages" name="productImages[]" multiple>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2>Add New Product</h2>
+                            <a href="./product_management.html" class="btn btn-outline-secondary">Back to Products</a>
+                        </div>
+                        
+                        <form id="addProductForm">
+                            <!-- Base Product Information -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Basic Information</h5>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="productName" class="form-label">Product Name</label>
-                                    <input type="text" class="form-control" id="productName" name="productName" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="productPrice" class="form-label">Price</label>
-                                    <input type="number" class="form-control" id="productPrice" name="productPrice" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="productQuantity" class="form-label">Quantity</label>
-                                    <input type="number" class="form-control" id="productQuantity" name="productQuantity" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="productCategory" class="form-label">Category</label>
-                                    <select class="form-select" id="productCategory" name="productCategory" required>
-                                        <option value="" disabled selected>Select a category</option>
-                                        <option value="furniture">Furniture</option>
-                                        <option value="decor">Decor</option>
-                                        <option value="lighting">Lighting</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="productColor" class="form-label">Color</label>
-                                    <select class="form-select" id="productColor" name="productColor" required>
-                                        <option value="" disabled selected>Select a color</option>
-                                        <option value="black">Black</option>
-                                        <option value="white">White</option>
-                                        <option value="brown">Brown</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="productCollection" class="form-label">Collection</label>
-                                    <select class="form-select" id="productCollection" name="productCollection" required>
-                                        <option value="" disabled selected>Select a collection</option>
-                                        <option value="modern">Modern</option>
-                                        <option value="classic">Classic</option>
-                                        <option value="vintage">Vintage</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="productMaterial" class="form-label">Material</label>
-                                    <select class="form-select" id="productMaterial" name="productMaterial" required>
-                                        <option value="" disabled selected>Select a material</option>
-                                        <option value="wood">Wood</option>
-                                        <option value="metal">Metal</option>
-                                        <option value="glass">Glass</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="productDimension" class="form-label">Dimension</label>
-                                    <input type="text" class="form-control" id="productDimension" name="productDimension" placeholder="e.g., 200x100x50 cm" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="productTheme" class="form-label">Theme</label>
-                                    <select class="form-select" id="productTheme" name="productTheme" required>
-                                        <option value="" disabled selected>Select a theme</option>
-                                        <option value="black-and-white">Black and White</option>
-                                        <option value="colorful">Colorful</option>
-                                    </select>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="productName" class="form-label">Product Name*</label>
+                                            <input type="text" class="form-control" id="productName" name="name" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="productCategory" class="form-label">Category*</label>
+                                            <select class="form-select" id="productCategory" name="categoryId" required>
+                                                <option value="" disabled selected>Select a category</option>
+                                                <!-- Categories will be loaded from API -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="basePrice" class="form-label">Base Price*</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" step="0.01" class="form-control" id="basePrice" name="basePrice" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="baseProductQuantity" class="form-label">Base Quantity*</label>
+                                            <input type="number" class="form-control" id="baseProductQuantity" name="baseProductQuantity" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="width" class="form-label">Width (cm)</label>
+                                            <input type="number" step="0.01" class="form-control" id="width" name="width">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="length" class="form-label">Length (cm)</label>
+                                            <input type="number" step="0.01" class="form-control" id="length" name="length">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="height" class="form-label">Height (cm)</label>
+                                            <input type="number" step="0.01" class="form-control" id="height" name="height">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <label for="description" class="form-label">Description</label>
+                                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-center">
-                                <button type="submit" class="btn btn-outline-dark">Add Product</button>
+
+                            <!-- Product Images -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Product Images</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="baseProductImage" class="form-label">Main Product Image*</label>
+                                            <input type="file" class="form-control" id="baseProductImage" name="baseProductImage" accept="image/*" required>
+                                            <div id="baseImagePreview" class="image-preview-container mt-2"></div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="otherProductImages" class="form-label">Additional Images</label>
+                                            <input type="file" class="form-control" id="otherProductImages" name="otherProductImages" accept="image/*" multiple>
+                                            <div id="otherImagesPreview" class="image-preview-container mt-2"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Product Options -->
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Product Options</h5>
+                                    <button type="button" class="btn btn-sm btn-outline-dark" id="addOptionBtn">Add Option</button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="optionsContainer">
+                                        <!-- Options will be dynamically added here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-center my-4">
+                                <button type="submit" class="btn btn-dark" id="submitBtn">Save Product</button>
                             </div>
                         </form>
                     </div>
                 </section>
-
-
-
-
-
-                
-                
-                
-                
             </div>
         </div>
     </div>
+
+    <!-- Product Details Modal -->
+    <div class="modal-backdrop" id="product-details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Product Added Successfully</h5>
+                <button type="button" class="btn-close" id="details-close-btn"></button>
+            </div>
+            <div class="modal-body" id="product-details-content">
+                <!-- Product details will be dynamically added here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-dark" id="add-another-btn">Add Another Product</button>
+                <button class="btn btn-dark" id="go-to-products-btn">Go to Products</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="admin.js"></script>
-    <script>
-        
-    </script>
+    <script src="add_product.js"></script>
 </body>
 
 </html>
