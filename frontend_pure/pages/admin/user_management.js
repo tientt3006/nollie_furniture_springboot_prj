@@ -31,6 +31,25 @@ document.addEventListener('DOMContentLoaded', function() {
         loadUsers();
     });
 
+    // Add reset button functionality
+    document.getElementById("reset-filters").addEventListener("click", function() {
+        // Clear all input fields
+        document.getElementById("search-id-input").value = '';
+        document.getElementById("search-name-input").value = '';
+        document.getElementById("sort-by").value = 'id';
+        document.getElementById("sort-order").value = 'asc';
+        
+        // Reset filter state
+        state.filters.userId = '';
+        state.filters.search = '';
+        state.filters.sortBy = 'id';
+        state.filters.sortDirection = 'asc';
+        state.pagination.currentPage = 0; // Reset to first page
+        
+        // Reload users with reset filters
+        loadUsers();
+    });
+
     document.getElementById("page-size").addEventListener("change", function() {
         state.pagination.pageSize = parseInt(this.value);
         state.pagination.currentPage = 0; // Reset to first page when changing page size
