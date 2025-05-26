@@ -595,3 +595,23 @@ body {
 #show-all-results-btn:hover {
     background: #333;
 }
+
+/* Top selling section enhancements */
+.loading-indicator {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: #666;
+}
+
+.product-options {
+    margin: 5px 0;
+}
+
+.option-text {
+    font-size: 12px;
+    color: #555;
+    margin: 2px 0;
+    font-style: italic;
+}

@@ -188,3 +188,196 @@ function showAllResults() {
     alert("Redirecting to all results page...");
     // Implement redirection logic here
 }
+
+// Function to fetch top-selling products
+async function fetchTopSellingProducts() {
+    try {
+        const response = await fetch('http://localhost:8080/api/product/top-sell/8');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.result || [];
+    } catch (error) {
+        console.error('Error fetching top-selling products:', error);
+        return [];
+    }
+}
+
+// Function to format price in VND
+function formatPrice(price) {
+    return new Intl.NumberFormat('vi-VN').format(price) + ' đ';
+}
+
+// Function to generate color circles HTML
+function generateColorOptions(productOptions) {
+    // Find color options
+    const colorOption = productOptions.find(option => 
+        option.optionName.toLowerCase().includes('color'));
+    
+    if (!colorOption) return '';
+    
+    let colorHTML = '<div class="color-list">';
+    
+    // Get up to 5 color values
+    const colorValues = colorOption.productOptionValueResponseList.slice(0, 5);
+    
+    colorValues.forEach(color => {
+        // Try to extract color from name or use a default
+        let colorName = color.optionValueName.toLowerCase();
+        let backgroundColor = '#c4c4c4'; // Default color
+        
+        if (colorName.includes('red')) backgroundColor = '#c13a3a';
+        else if (colorName.includes('blue')) backgroundColor = '#3a57c1';
+        else if (colorName.includes('green')) backgroundColor = '#3ac144';
+        else if (colorName.includes('black')) backgroundColor = '#262626';
+        else if (colorName.includes('gray')) backgroundColor = '#5a5a5a';
+        else if (colorName.includes('brown')) backgroundColor = '#4d380e';
+        
+        colorHTML += `<span class="color-circle" style="background-color: ${backgroundColor};"></span>`;
+    });
+    
+    colorHTML += '</div>';
+    return colorHTML;
+}
+
+// Function to list options
+function listProductOptions(productOptions) {
+    if (!productOptions || productOptions.length === 0) return '';
+    
+    let optionsHTML = '<div class="product-options">';
+    
+    productOptions.forEach(option => {
+        const optionName = option.optionName;
+        const values = option.productOptionValueResponseList
+            .map(value => value.optionValueName)
+            .join(', ');
+        
+        optionsHTML += `<p class="option-text">${optionName}: ${values}</p>`;
+    });
+    
+    optionsHTML += '</div>';
+    return optionsHTML;
+}
+
+// Function to render top-selling products
+async function renderTopSellingProducts() {
+    const productListElement = document.getElementById('top-selling-products');
+    
+    // Show loading indicator
+    productListElement.innerHTML = '<div class="loading-indicator">Loading products...</div>';
+    
+    const products = await fetchTopSellingProducts();
+    
+    if (products.length === 0) {
+        productListElement.innerHTML = '<p>No products found</p>';
+        return;
+    }
+    
+    let productsHTML = '';
+    
+    products.forEach(product => {
+        // Get product image URL from baseImageUrl
+        const imageId = Object.keys(product.baseImageUrl)[0];
+        const imageUrl = product.baseImageUrl[imageId];
+        
+        // Generate product card HTML
+        productsHTML += `
+        <div class="product-card">
+            <a href="../product/product.html?id=${product.productId}" style="text-decoration: none; color: black;">
+                <img src="${imageUrl}" alt="${product.name}">
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <p>${product.category.name}</p>
+                    ${listProductOptions(product.productOptionResponseList)}
+                    ${generateColorOptions(product.productOptionResponseList)}
+                    <p class="price">${formatPrice(product.basePrice)}</p>
+                </div>
+            </a>
+        </div>`;
+    });
+    
+    productListElement.innerHTML = productsHTML;
+}
+
+// Function to fetch categories
+async function fetchCategories() {
+    try {
+        const response = await fetch('http://localhost:8080/api/category');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.result || [];
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        return [];
+    }
+}
+
+// Function to get category image URL
+function getCategoryImageUrl(categoryName) {
+    // Map of category names to image filenames
+    const categoryImages = {
+        'sofa': 'cate1.png',
+        'chair': 'cate2.png',
+        'table': 'cate3.png',
+        'storage': 'cate4.png',
+        'lamp': 'cate5.png',
+        'accessories': 'cate6.png',
+        'rug': 'cate7.png',
+        'outdoor': 'cate8.png',
+        'bed': 'cate9.png'
+    };
+    
+    // Find matching image name (case insensitive)
+    const lowerCaseName = categoryName.toLowerCase();
+    for (const [key, value] of Object.entries(categoryImages)) {
+        if (lowerCaseName.includes(key)) {
+            return `../../images/${value}`;
+        }
+    }
+    
+    // Default image if no match is found
+    return '../../images/placeholder.png';
+}
+
+// Function to render categories
+async function renderCategories() {
+    const categoryListElement = document.getElementById('category-list');
+    
+    // Show loading indicator
+    categoryListElement.innerHTML = '<div class="loading-indicator">Loading categories...</div>';
+    
+    const categories = await fetchCategories();
+    
+    if (categories.length === 0) {
+        categoryListElement.innerHTML = '<p>No categories found</p>';
+        return;
+    }
+    
+    let categoriesHTML = '';
+    
+    categories.forEach(category => {
+        const imageUrl = category.imgUrl || getCategoryImageUrl(category.name);
+        
+        // Generate category card HTML
+        categoriesHTML += `
+        <div class="product-card" style="box-shadow: none;">
+            <a href="../all_product/products.html?category=${category.id}" style="text-decoration: none; color: black;">
+                <img src="${imageUrl}" alt="${category.name}" style="border-radius: 10px;">
+                <div class="product-info" style="background-color: rgb(255, 255, 255);">
+                    <h3 style="text-align: center; font-size: 20px; background-color: rgb(255, 255, 255);">${category.name}</h3>
+                </div>
+            </a>
+        </div>`;
+    });
+    
+    categoryListElement.innerHTML = categoriesHTML;
+}
+
+// Load products and categories on page load
+document.addEventListener('DOMContentLoaded', () => {
+    renderTopSellingProducts();
+    renderCategories();
+});
