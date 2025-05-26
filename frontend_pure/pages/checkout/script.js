@@ -154,3 +154,172 @@ function showAllResults() {
     alert("Redirecting to all results page...");
     // Implement redirection logic here
 }
+
+// API configuration
+const API_BASE_URL = 'http://localhost:8080/api';
+
+// Get auth token from localStorage
+function getAuthToken() {
+    return localStorage.getItem('authToken');
+}
+
+// Format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(amount);
+}
+
+// Load cart items and display order summary
+async function loadCartItems() {
+    try {
+        const token = getAuthToken();
+        if (!token) {
+            throw new Error('Please login to continue');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/cart`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load cart items');
+        }
+
+        const data = await response.json();
+        displayCartItems(data.result);
+    } catch (error) {
+        console.error('Error loading cart:', error);
+        document.getElementById('cart-items').innerHTML = `
+            <div class="error">
+                Failed to load cart items. Please try again.
+            </div>
+        `;
+    }
+}
+
+// Display cart items in order summary
+function displayCartItems(cartData) {
+    const cartItemsContainer = document.getElementById('cart-items');
+    const totalAmountElement = document.getElementById('total-amount');
+
+    if (!cartData || !cartData.items || cartData.items.length === 0) {
+        cartItemsContainer.innerHTML = '<p>Your cart is empty</p>';
+        totalAmountElement.textContent = formatCurrency(0);
+        return;
+    }
+
+    const itemsHTML = cartData.items.map(item => `
+        <div class="cart-item">
+            <div class="item-info">
+                <div class="item-name">${item.productName}</div>
+                <div class="item-details">
+                    ${item.optionName}: ${item.optionValueName} × ${item.quantity}
+                </div>
+            </div>
+            <div class="item-price">${formatCurrency(item.totalPrice)}</div>
+        </div>
+    `).join('');
+
+    cartItemsContainer.innerHTML = itemsHTML;
+    totalAmountElement.textContent = formatCurrency(cartData.total);
+}
+
+// Handle checkout form submission
+async function handleCheckout(event) {
+    event.preventDefault();
+    
+    const checkoutBtn = document.getElementById('checkout-btn');
+    const originalText = checkoutBtn.textContent;
+    
+    try {
+        // Disable button and show loading state
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Processing...';
+
+        // Get form data
+        const fullName = document.getElementById('fullName').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const notes = document.getElementById('notes').value.trim();
+        const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+
+        // Validate required fields
+        if (!fullName || !address || !phone) {
+            throw new Error('Please fill in all required fields');
+        }
+
+        const token = getAuthToken();
+        if (!token) {
+            throw new Error('Please login to continue');
+        }
+
+        // Prepare order data
+        const orderData = {
+            fullName,
+            address,
+            phone,
+            email,
+            paymentMethod,
+            notes
+        };
+
+        // Make order API call
+        const response = await fetch(`${API_BASE_URL}/order/make-order`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to create order');
+        }
+
+        const result = await response.json();
+        
+        if (result.code === 1000) {
+            // Extract order ID from response
+            const orderId = Object.values(result.result)[0];
+            
+            // Show success message
+            alert('Order placed successfully!');
+            
+            // Redirect to order details page with order ID
+            window.location.href = `../io/order_detail.html?orderId=${orderId}`;
+        } else {
+            throw new Error('Order creation failed');
+        }
+
+    } catch (error) {
+        console.error('Checkout error:', error);
+        alert(error.message || 'Failed to place order. Please try again.');
+    } finally {
+        // Re-enable button
+        checkoutBtn.disabled = false;
+        checkoutBtn.textContent = originalText;
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    // Load cart items
+    loadCartItems();
+    
+    // Set up checkout form handler
+    const checkoutBtn = document.getElementById('checkout-btn');
+    checkoutBtn.addEventListener('click', handleCheckout);
+    
+    // Remove old quotation button handler if it exists
+    const quotationBtn = document.querySelector('.quotation');
+    if (quotationBtn) {
+        quotationBtn.remove();
+    }
+});

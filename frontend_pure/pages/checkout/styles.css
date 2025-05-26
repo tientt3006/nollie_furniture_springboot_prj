@@ -144,6 +144,16 @@ body {
     border: 1px solid #ddd;
     border-radius: 5px;
 }
+.billing-details textarea {
+    width: 100%;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: vertical;
+    font-family: inherit;
+}
 .order-summary {
     display: flex;
     flex-direction: column;
@@ -528,4 +538,24 @@ body {
 
 #show-all-results-btn:hover {
     background: #333;
+}
+
+.loading {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+.error {
+    color: #d32f2f;
+    background-color: #ffebee;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+/* Remove card details sections since we're not using them */
+.card-details1,
+.card-details2 {
+    display: none;
 }
