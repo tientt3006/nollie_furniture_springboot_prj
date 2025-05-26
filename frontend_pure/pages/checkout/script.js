@@ -1,12 +1,12 @@
-document.querySelector('.checkout').addEventListener('click', function() {
-    alert('Checkout.');
-    window.location.href = '../io/order_detail.html'; // Redirect to homepage
-});
-
-document.querySelector('.quotation').addEventListener('click', function(event) {
-    event.preventDefault();
-    alert('Báo giá đã được lưu. Bạn có thể quay lại sau.');
-});
+// document.querySelector('.checkout').addEventListener('click', function() {
+//     alert('Checkout.');
+//     window.location.href = '../io/order_detail.html?orderId=${orderId}'; // Redirect to homepage
+// });
+// let orderId = null;
+// document.querySelector('.quotation').addEventListener('click', function(event) {
+//     event.preventDefault();
+//     alert('Báo giá đã được lưu. Bạn có thể quay lại sau.');
+// });
 
   
 
@@ -33,12 +33,12 @@ furMenu.addEventListener("click", (event) => {
     document.getElementById('sidebar-care').classList.remove('show');
 });
 
-collectionMenu.addEventListener("click", (event) => {
-    event.preventDefault();
-    document.getElementById('sidebar-collection').classList.toggle('show');
-    document.getElementById('sidebar-fur').classList.remove('show');
-    document.getElementById('sidebar-care').classList.remove('show');
-});
+// collectionMenu.addEventListener("click", (event) => {
+//     event.preventDefault();
+//     document.getElementById('sidebar-collection').classList.toggle('show');
+//     document.getElementById('sidebar-fur').classList.remove('show');
+//     document.getElementById('sidebar-care').classList.remove('show');
+// });
 careMenu.addEventListener("click", (event) => {
     event.preventDefault();
     document.getElementById('sidebar-care').classList.toggle('show');
@@ -179,7 +179,7 @@ async function loadCartItems() {
             throw new Error('Please login to continue');
         }
 
-        const response = await fetch(`${API_BASE_URL}/cart`, {
+        const response = await fetch(`${API_BASE_URL}/cart/view`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -308,8 +308,49 @@ async function handleCheckout(event) {
     }
 }
 
+// Load user information and pre-fill form
+async function loadUserInfo() {
+    try {
+        const token = getAuthToken();
+        if (!token) {
+            console.log('No auth token found, skipping user info load');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/user/my-info`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load user information');
+        }
+
+        const data = await response.json();
+        
+        if (data.code === 1000 && data.result) {
+            // Pre-fill form fields with user data
+            const userInfo = data.result;
+            
+            document.getElementById('fullName').value = userInfo.fullName || '';
+            document.getElementById('address').value = userInfo.address || '';
+            document.getElementById('phone').value = userInfo.phone || '';
+            document.getElementById('email').value = userInfo.email || '';
+        }
+    } catch (error) {
+        console.error('Error loading user info:', error);
+        // Don't show error to user as this is optional functionality
+    }
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
+    // Load user information first
+    loadUserInfo();
+    
     // Load cart items
     loadCartItems();
     

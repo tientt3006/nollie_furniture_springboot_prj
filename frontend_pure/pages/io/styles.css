@@ -308,16 +308,22 @@ body {
 }
 
 .cart-item .cart-image {
-    width: 400px;
-    height: 300px;
-    /* hoặc giá trị tuỳ chỉnh */
+    width: 200px;
+    height: 150px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f9f9f9;
 }
 
 .cart-item .cart-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
     display: block;
     margin: 0 auto;
 }
@@ -882,4 +888,67 @@ body {
 
 #show-all-results-btn:hover {
     background: #333;
+}
+
+/* order detail specific styles */
+.reorder {
+    background: black !important;
+    color: white !important;
+    border: 1px solid white !important;
+}
+
+.reorder:hover {
+    background: white !important;
+    color: black !important;
+    border: 1px solid black !important;
+}
+
+.reorder:disabled {
+    background: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed !important;
+    border: 1px solid #ccc !important;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 50px;
+    color: #666;
+}
+
+.error-state {
+    text-align: center;
+    padding: 50px;
+    color: #e74c3c;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .cart-container {
+        flex-direction: column;
+        gap: 30px;
+        padding: 20px;
+    }
+    
+    .cart-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .cart-item .cart-image {
+        width: 150px;
+        height: 120px;
+        margin: 0 auto 15px auto;
+    }
+    
+    .item-info {
+        margin-right: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .cart-item .cart-image {
+        width: 120px;
+        height: 100px;
+    }
 }
