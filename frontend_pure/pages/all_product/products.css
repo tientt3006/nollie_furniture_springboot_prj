@@ -227,6 +227,173 @@ body {
     border-radius: 3px;
 }
 
+/* Loading indicator */
+.product-list.loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.product-list.loading::after {
+    content: "Loading products...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 15px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.loading-message {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.error-message {
+    text-align: center;
+    padding: 20px;
+    color: #dc3545;
+    background-color: #f8d7da;
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.no-products {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Enhanced Pagination */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 10px 0;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.page-size-control, .jump-to-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-size-control select, .jump-to-page input {
+    width: auto;
+    display: inline-block;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.jump-to-page input {
+    width: 60px;
+}
+
+.jump-to-page button {
+    padding: 4px 10px;
+    background-color: #212529;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.jump-to-page button:hover {
+    background-color: #343a40;
+}
+
+.pagination {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.page-item .page-link {
+    display: block;
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    color: #212529;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.page-item .page-link:hover {
+    background-color: #e9ecef;
+    color: #0056b3;
+}
+
+.page-item.active .page-link {
+    background-color: #212529;
+    color: white;
+    border-color: #212529;
+}
+
+.page-item .page-link[disabled] {
+    color: #6c757d;
+    pointer-events: none;
+    cursor: not-allowed;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .page-size-control, .pagination, .jump-to-page {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Radio styles for filters */
+.sidebar-color ul li, .sidebar-material ul li, .sidebar-category ul li {
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-color input[type="radio"],
+.sidebar-material input[type="radio"],
+.sidebar-category input[type="radio"] {
+    margin-right: 10px;
+}
+
+/* Color circle improvements */
+.color-circle {
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Product card improvements */
+.product-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.product-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
 /* sidebar sort */
 .sidebar-sort {
     position: fixed;
@@ -581,23 +748,19 @@ body {
 .slider-container input[type="range"] {
     width: 100%;
     margin: 5px 0;
-    -webkit-appearance: none;
     width: 100%;
     height: 5px;
     background: #ccc;
     outline: none;
     border-radius: 5px;
-    transition: background 0.3s;
 }
 
 .slider-container input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
     width: 15px;
     height: 15px;
     background: black;
     border-radius: 50%;
     cursor: pointer;
-    transition: background 0.3s;
 }
 
 .slider-container input[type="range"]::-moz-range-thumb {
@@ -606,7 +769,6 @@ body {
     background: black;
     border-radius: 50%;
     cursor: pointer;
-    transition: background 0.3s;
 }
 
 .slider-container input[type="number"] {

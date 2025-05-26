@@ -80,7 +80,7 @@
     <div id="sidebar-sort" class="sidebar-sort">
         <button class="close-btn-sort" onclick="allSidebarFilterOff()">&larr;</button>
         <ul>
-            <li>
+            <li style="display: none;">
                 <input type="radio" id="popular-sort" name="sort-option" value="popular-sort">
                 <label for="popular-sort">Popular</label>
             </li>
@@ -124,34 +124,19 @@
     <div id="sidebar-color" class="sidebar-color">
         <p>Color</p>
         <ul>
-            <li><input type="checkbox" id="color-red" value="Red"><label for="color-red"><span class="color-circle" style="background-color: red;"></span> Red</label></li>
-            <li><input type="checkbox" id="color-white" value="White"><label for="color-white"><span class="color-circle" style="background-color: white; border: 1px solid #ccc;"></span> White</label></li>
-            <li><input type="checkbox" id="color-black" value="Black"><label for="color-black"><span class="color-circle" style="background-color: black;"></span> Black</label></li>
-
+            <!-- Colors will be populated dynamically -->
         </ul>
     </div>
     <div id="sidebar-material" class="sidebar-material">
         <p>Material</p>
         <ul>
-            <li><input type="checkbox" id="material-fabric" value="Fabric"><label for="material-fabric"> Fabric</label></li>
-            <li><input type="checkbox" id="material-lacquered" value="Lacquered"><label for="material-lacquered"> Lacquered</label></li>
-            <li><input type="checkbox" id="material-metal" value="Metal"><label for="material-metal"> Metal</label></li>
-            <li><input type="checkbox" id="material-wood" value="Wood"><label for="material-wood"> Wood</label></li>
-            <li><input type="checkbox" id="material-oak" value="Oak"><label for="material-oak"> Oak</label></li>
-            <li><input type="checkbox" id="material-aluminium" value="Aluminium"><label for="material-aluminium"> Aluminium</label></li>
-            <li><input type="checkbox" id="material-leather" value="Leather"><label for="material-leather"> Leather</label></li>
+            <!-- Materials will be populated dynamically -->
         </ul>
     </div>
     <div id="sidebar-category" class="sidebar-category">
         <p>Category</p>
         <ul>
-            <li><input type="checkbox" id="category-sofas" value="Sofas"><label for="category-sofas"> Sofas</label></li>
-            <li><input type="checkbox" id="category-chairs" value="Chairs"><label for="category-chairs"> Chairs</label></li>
-            <li><input type="checkbox" id="category-table" value="Table"><label for="category-table"> Table</label></li>
-            <li><input type="checkbox" id="category-storages" value="Storages"><label for="category-storages"> Storages</label></li>
-            <li><input type="checkbox" id="category-lamp" value="Lamp"><label for="category-lamp"> Lamp</label></li>
-            <li><input type="checkbox" id="category-rugs" value="Rugs"><label for="category-rugs"> Rugs</label></li>
-            <li><input type="checkbox" id="category-beds" value="Beds"><label for="category-beds"> Beds</label></li>
+            <!-- Categories will be populated dynamically -->
         </ul>
     </div>
     <div id="sidebar-price" class="sidebar-price">
@@ -266,22 +251,32 @@
                 
             </div>
             <div class="product-list" id="productList">
-                <!-- Các sản phẩm sẽ được thêm vào đây bằng JS -->
+                <!-- Products will be loaded here -->
+                <div class="loading-message">Loading products...</div>
             </div>
             <div class="load-more-container">
-                <p id="showingCount">Showing 15 of 399 products</p>
-                <button id="loadMore" class="load-more-btn">Load more products</button>
+                <p id="showingCount">Showing 0 of 0 products</p>
+                <button id="loadMore" class="load-more-btn" style="visibility: hidden;">Load more products</button>
             </div>
             <div class="pagination-container">
+                <div class="page-size-control">
+                    <label for="page-size-selector">Items per page:</label>
+                    <select id="page-size-selector" class="form-select form-select-sm" style="width: 80px;">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="30">30</option>
+                    </select>
+                </div>
+                
                 <ul class="pagination">
-                    <li class="page-item"><a href="#" class="page-link">&laquo;</a></li>
-                    <li class="page-item active"><a href="#" class="page-link">1</a></li>
-                    <li class="page-item"><a href="#" class="page-link">2</a></li>
-                    <li class="page-item"><a href="#" class="page-link">3</a></li>
-                    <li class="page-item"><a href="#" class="page-link">4</a></li>
-                    <li class="page-item"><a href="#" class="page-link">5</a></li>
-                    <li class="page-item"><a href="#" class="page-link">&raquo;</a></li>
+                    <!-- Pagination will be dynamically generated -->
                 </ul>
+                
+                <div class="jump-to-page">
+                    <label for="jump-to-page">Go to page:</label>
+                    <input type="number" id="jump-to-page" class="form-control form-control-sm" min="1">
+                    <button id="jump-btn" class="btn btn-sm btn-dark">Go</button>
+                </div>
             </div>
         </section>
             

@@ -1079,16 +1079,16 @@ public class ProductServiceImpl implements ProductService {
         java.util.Set<Integer> seenProductIds = new java.util.HashSet<>();
         
         // Start with empty categories if the list is empty
-        List<List<Integer>> categoryQueries = categories.isEmpty() ? 
-                List.of(null) : categories.stream().map(List::of).collect(Collectors.toList());
+        List<List<Integer>> categoryQueries = categories.isEmpty() ?
+                List.of((List<Integer>) null) : categories.stream().map(List::of).collect(Collectors.toList());
         
         // Start with empty colors if the list is empty
         List<List<Integer>> colorQueries = colors.isEmpty() ?
-                List.of(null) : colors.stream().map(List::of).collect(Collectors.toList());
+                List.of((List<Integer>) null) : colors.stream().map(List::of).collect(Collectors.toList());
         
         // Start with empty materials if the list is empty
         List<List<Integer>> materialQueries = materials.isEmpty() ?
-                List.of(null) : materials.stream().map(List::of).collect(Collectors.toList());
+                List.of((List<Integer>) null) : materials.stream().map(List::of).collect(Collectors.toList());
         
         // Count total matches for pagination
         long totalElements = 0;
