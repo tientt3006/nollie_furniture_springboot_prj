@@ -169,3 +169,209 @@ function showAllResults() {
     alert("Redirecting to all results page...");
     // Implement redirection logic here
 }
+
+// Cart API functions
+const API_BASE_URL = 'http://localhost:8080/api';
+
+function getAuthToken() {
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+}
+
+function getHeaders() {
+    const token = getAuthToken();
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+}
+
+async function viewCart() {
+    try {
+        document.getElementById('loading').style.display = 'block';
+        
+        const response = await fetch(`${API_BASE_URL}/cart/view`, {
+            method: 'GET',
+            headers: getHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch cart');
+        }
+
+        const data = await response.json();
+        
+        if (data.code === 1000) {
+            renderCart(data.result);
+        } else {
+            throw new Error('Failed to load cart');
+        }
+    } catch (error) {
+        console.error('Error viewing cart:', error);
+        showEmptyCart();
+    } finally {
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+async function updateCartItemQuantity(itemId, quantity) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/cart/item/${itemId}/quantity/${quantity}`, {
+            method: 'PUT',
+            headers: getHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update quantity');
+        }
+
+        const data = await response.json();
+        
+        if (data.code === 1000) {
+            // Refresh cart after successful update
+            viewCart();
+        } else {
+            throw new Error('Failed to update quantity');
+        }
+    } catch (error) {
+        console.error('Error updating quantity:', error);
+        alert('Failed to update quantity');
+    }
+}
+
+async function removeCartItem(itemId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/cart/item/${itemId}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to remove item');
+        }
+
+        const data = await response.json();
+        
+        if (data.code === 1000) {
+            // Refresh cart after successful removal
+            viewCart();
+        } else {
+            throw new Error('Failed to remove item');
+        }
+    } catch (error) {
+        console.error('Error removing item:', error);
+        alert('Failed to remove item');
+    }
+}
+
+async function clearCart() {
+    if (!confirm('Are you sure you want to clear your cart?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/cart/clear`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to clear cart');
+        }
+
+        const data = await response.json();
+        
+        if (data.code === 1000) {
+            showEmptyCart();
+        } else {
+            throw new Error('Failed to clear cart');
+        }
+    } catch (error) {
+        console.error('Error clearing cart:', error);
+        alert('Failed to clear cart');
+    }
+}
+
+function renderCart(cartData) {
+    const cartContainer = document.getElementById('cart-container');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const emptyCart = document.getElementById('empty-cart');
+    
+    if (!cartData.items || cartData.items.length === 0) {
+        showEmptyCart();
+        return;
+    }
+
+    // Show cart container
+    cartContainer.style.display = 'flex';
+    emptyCart.style.display = 'none';
+
+    // Update item count
+    document.getElementById('cart-item-count').textContent = `${cartData.items.length} items`;
+
+    // Render cart items
+    cartItemsContainer.innerHTML = cartData.items.map(item => `
+        <div class="cart-item" data-item-id="${item.id}">
+            <div class="cart-image">
+                <img src="${item.productImageUrl}" alt="${item.productName}">
+            </div>
+            <div class="item-info">
+                <div class="item-info-row1">
+                    <div>
+                        <h2><b>${item.productName}</b></h2>
+                        ${item.optionName ? `<p>${item.optionName}: ${item.optionValueName}</p>` : ''}
+                        <br>
+                        <span style="color: gray; font-size: 12px">Price: </span>
+                        <p class="price"><b>${formatPrice(item.itemPrice)} đ</b></p>
+                    </div>
+                    <div class="item-actions">
+                        <input class="quantity" type="number" value="${item.quantity}" min="1" max="50" 
+                               onchange="updateQuantity(${item.id}, this.value)">
+                    </div>
+                </div>
+                <hr>
+                <div class="item-info-row2">
+                    <div>
+                        <p><span style="color: gray;">Total: </span> ${formatPrice(item.totalPrice)} đ</p>
+                    </div>
+                    <div class="item-actions">
+                        <button class="remove" onclick="removeItem(${item.id})">Remove</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    // Update totals
+    document.getElementById('subtotal').textContent = `${formatPrice(cartData.total)} đ`;
+    document.getElementById('total-price').textContent = `${formatPrice(cartData.total)} đ`;
+}
+
+function showEmptyCart() {
+    document.getElementById('cart-container').style.display = 'none';
+    document.getElementById('empty-cart').style.display = 'block';
+    document.getElementById('cart-item-count').textContent = '0 items';
+}
+
+function formatPrice(price) {
+    return new Intl.NumberFormat('vi-VN').format(price);
+}
+
+function updateQuantity(itemId, quantity) {
+    if (quantity < 1 || quantity > 50) {
+        alert('Quantity must be between 1 and 50');
+        viewCart(); // Refresh to reset quantity
+        return;
+    }
+    updateCartItemQuantity(itemId, quantity);
+}
+
+function removeItem(itemId) {
+    if (confirm('Are you sure you want to remove this item?')) {
+        removeCartItem(itemId);
+    }
+}
+
+// Load cart when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    viewCart();
+});
