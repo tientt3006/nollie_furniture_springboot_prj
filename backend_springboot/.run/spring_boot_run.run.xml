@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="spring_boot_run" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="indiv.neitdev.nollie_furniture.NollieFurnitureApplication" />
+    <module name="nollie_furniture" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
